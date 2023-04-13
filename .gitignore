@@ -2,3 +2,4 @@ node_modules
 uploads/files/*
 uploads/products/*
 uploads/users/*
+.env
