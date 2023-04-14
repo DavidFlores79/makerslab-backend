@@ -4,6 +4,7 @@ const Role = require('../models/role.model');
 const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const moduleModel = require('../models/module.model');
+const permissionModel = require('../models/permission.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -177,6 +178,14 @@ const validateModuleById = async ( id ) => {
     }
 }
 
+const validatePermissionById = async ( id ) => {
+    console.log(id);
+    const moduleExist = await permissionModel.findById(id)
+    if(!moduleExist) {
+        throw new Error(`El modulo con el id: ${ id } no existe en BD.`)
+    }
+}
+
 module.exports = { 
     validateRole, 
     validateEmail, 
@@ -190,5 +199,6 @@ module.exports = {
     validateProductById,
     coleccionesPermitidas,
     validateRoute,
-    validateModuleById
+    validateModuleById,
+    validatePermissionById
 }

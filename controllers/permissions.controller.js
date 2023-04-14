@@ -18,7 +18,8 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { name } = req.body
-    const data = await new permissionModel({ name })
+    const NAME = name.toUpperCase()
+    const data = await new permissionModel({ name: NAME })
     
     try {
 
@@ -41,12 +42,16 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, ...resto } = req.body
+    const { _id, name, ...resto } = req.body
+    const NAME = name.toUpperCase()
 
     try {
 
         //guardar en la BD
-        const data = await permissionModel.findByIdAndUpdate(id, resto, {
+        const data = await permissionModel.findByIdAndUpdate(id, {
+            name: NAME,
+            ...resto
+        }, {
             new: true
         })
         res.send({

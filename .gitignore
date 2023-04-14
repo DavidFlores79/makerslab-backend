@@ -2,4 +2,6 @@ node_modules
 uploads/files/*
 uploads/products/*
 uploads/users/*
+uploads/modules/*
+uploads/permissions/*
 .env
