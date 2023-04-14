@@ -4,13 +4,13 @@ const cloudinary = require('cloudinary').v2;
 const { uploadFiles } = require('../helpers/uploads.helper');
 const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
-
+const moduleModel = require('../models/module.model');
 
 // Configuration 
 cloudinary.config({
   cloud_name: "dltvxi4tm",
-  api_key: "756749183381229",
-  api_secret: "_lUcHRvYEV8cT4ggHW1iiV_gVpw"
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 
@@ -24,7 +24,7 @@ const uploadFile = async (req, res) => {
   
   try {
     //   const { nombre, fullPath } = await uploadFiles(req.files, 'documents', ['txt', 'csv']);
-      const { nombre, fullPath } = await uploadFiles(req.files, 'files', ['txt', 'csv', 'jpg', 'png']);
+      const { nombre, fullPath } = await uploadFiles(req.files, 'files', ['txt', 'csv']);
 
       res.status(201).send({
         msg: `Archivo Cargado: ${nombre}`,
@@ -65,6 +65,13 @@ const uploadImage = async (req, res) => {
         modelo = await productModel.findById(id)
         if(!modelo) {
           return res.status(404).send({ msg: `El producto con id: ${id} no existe en la BD.`})
+        }
+        // console.log(product);
+        break;
+      case 'modules':
+        modelo = await moduleModel.findById(id)
+        if(!modelo) {
+          return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.`})
         }
         // console.log(product);
         break;
@@ -132,8 +139,15 @@ const uploadImageCloudinary = async (req, res) => {
         }
         // console.log(product);
         break;
+      case 'modules':
+        modelo = await moduleModel.findById(id)
+        if(!modelo) {
+          return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.`})
+        }
+        // console.log(product);
+        break;
       default:
-        return res.status(500).send({ msg: 'Esta coleccion no está permitida para carga de archivos.'})
+        return res.status(500).send({ msg: 'Esta colección no está permitida para carga de archivos.'})
     }
     
     try {
@@ -230,8 +244,15 @@ const showImage = async (req, res) => {
         }
         // console.log(product);
         break;
+      case 'modules':
+        modelo = await moduleModel.findById(id)
+        if(!modelo) {
+          return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.`})
+        }
+        // console.log(product);
+        break;
       default:
-        return res.status(500).send({ msg: 'Esta coleccion no está permitida para carga de archivos.'})
+        return res.status(500).send({ msg: 'Esta colección no está permitida para carga de archivos.'})
     }
     
     try {

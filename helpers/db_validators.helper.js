@@ -3,6 +3,7 @@ const categoryModel = require('../models/category.model');
 const Role = require('../models/role.model');
 const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
+const moduleModel = require('../models/module.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -149,6 +150,33 @@ const coleccionesPermitidas = ( coleccion = '', colecciones = []  ) => {
 
 }
 
+const validateRoute = async (route = '', {req}) => {
+
+    const id = req.params.id
+    const existeRoute = await moduleModel.findOne({ route })
+
+    //valida si el registro a actualizar es el mismo que
+    //fue encontrado deja guardar el mismo valor
+    if(id && existeRoute) {
+        if(String(existeRoute._id) != id) {
+            throw new Error(`La ruta ${ route } ya está registrada.`)
+        }
+    } else {
+        if(existeRoute) {
+            throw new Error(`La ruta ${ route } ya está registrada.`)
+        }
+    }
+
+}
+
+const validateModuleById = async ( id ) => {
+    console.log(id);
+    const moduleExist = await moduleModel.findById(id)
+    if(!moduleExist) {
+        throw new Error(`El modulo con el id: ${ id } no existe en BD.`)
+    }
+}
+
 module.exports = { 
     validateRole, 
     validateEmail, 
@@ -160,5 +188,7 @@ module.exports = {
     validateCategoryById, 
     existProductName, 
     validateProductById,
-    coleccionesPermitidas
+    coleccionesPermitidas,
+    validateRoute,
+    validateModuleById
 }

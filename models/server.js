@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
+require('dotenv').config()
 
 const usersRoutes = require("../routes/users.routes");
 const rolesRoutes = require("../routes/roles.routes");
@@ -10,6 +11,8 @@ const productsRoutes = require("../routes/products.routes");
 const authRoutes = require("../routes/auth.routes");
 const searchRoutes = require("../routes/search.routes");
 const uploadRoutes = require("../routes/uploads.routes");
+const modulesRoutes = require("../routes/modules.routes");
+const permissionsRoutes = require("../routes/permissions.routes");
 const fileUpload = require("express-fileupload");
 
 class Server {
@@ -63,6 +66,8 @@ class Server {
     this.app.use("/api/roles", rolesRoutes);
     this.app.use("/api/categories", categoriesRoutes);
     this.app.use("/api/products", productsRoutes);
+    this.app.use("/api/modules", modulesRoutes);
+    this.app.use("/api/permissions", permissionsRoutes);
     this.app.use("/auth", authRoutes);
     this.app.use("/api/search", searchRoutes);
     this.app.use("/api/upload", uploadRoutes);
