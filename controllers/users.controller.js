@@ -9,6 +9,7 @@ getData = async (req, res) => {
     const data = await userModel.find({ deleted: false })
             .limit(limite)
             .skip(desde)
+            .populate('role');
 
     res.send({
         total: data.length,
@@ -20,7 +21,8 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { name, email, password, role, image } = req.body
-    const data = await new User({ name, email, password, role })
+    console.log('user role', role);
+    const data = await new User({ name, email, password, role }).populate('role');
 
     if(image != '') {
         data.image = image
@@ -52,7 +54,7 @@ postData = async (req, res) => {
 updateData = async (req, res) => {
     const { id } = req.params
     const { _id, password, google, ...resto } = req.body
-
+    console.log('resto', resto);
     try {
 
         if( password ) {
@@ -64,7 +66,8 @@ updateData = async (req, res) => {
         //guardar en la BD
         const data = await userModel.findByIdAndUpdate(id, resto, {
             new: true
-        })
+        }).populate('role');
+
         res.send({
            msg: `Se ha actualizado el registro`,
            data

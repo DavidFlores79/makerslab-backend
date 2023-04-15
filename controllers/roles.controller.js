@@ -8,6 +8,7 @@ getData = async (req, res) => {
     const data = await Role.find({ deleted: false, status: true })
             .limit(limite)
             .skip(desde)
+            .populate('modules')
 
     res.send({
         total: data.length,
@@ -19,7 +20,7 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { name, status } = req.body
-    const role = await new Role({ name, status })
+    const role = await new Role({ name, status }).populate('modules')
     
     try {
 
@@ -57,7 +58,8 @@ updateData = async (req, res) => {
         //guardar en la BD
         const data = await roleModel.findByIdAndUpdate(id, resto, {
             new: true
-        })
+        }).populate('modules');
+        
         res.send({
            msg: `Se ha actualizado el registro`,
            data
@@ -67,6 +69,29 @@ updateData = async (req, res) => {
         console.log(error);
         res.status(500).send({
             msg: 'Error al actualizar el registro',
+            error
+        })
+    }
+
+}
+
+showData = async (req, res) => {
+    const { id } = req.params
+
+    try {
+       
+        //guardar en la BD
+        const data = await roleModel.findById(id).populate('modules');
+        
+        res.send({
+           msg: `Registro encontrado.`,
+           data
+        });
+        
+    } catch (error) {   
+        console.log(error);
+        res.status(500).send({
+            msg: 'Error al buscar el registro',
             error
         })
     }
@@ -96,4 +121,4 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+module.exports = { getData, showData, postData, updateData, deleteData }

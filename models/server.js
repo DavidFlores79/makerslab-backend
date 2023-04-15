@@ -13,6 +13,7 @@ const searchRoutes = require("../routes/search.routes");
 const uploadRoutes = require("../routes/uploads.routes");
 const modulesRoutes = require("../routes/modules.routes");
 const permissionsRoutes = require("../routes/permissions.routes");
+const modulePermissionRoleRoutes = require("../routes/module_permission_role.routes");
 const fileUpload = require("express-fileupload");
 
 class Server {
@@ -68,6 +69,7 @@ class Server {
     this.app.use("/api/products", productsRoutes);
     this.app.use("/api/modules", modulesRoutes);
     this.app.use("/api/permissions", permissionsRoutes);
+    this.app.use("/api/profiles", modulePermissionRoleRoutes);
     this.app.use("/auth", authRoutes);
     this.app.use("/api/search", searchRoutes);
     this.app.use("/api/upload", uploadRoutes);

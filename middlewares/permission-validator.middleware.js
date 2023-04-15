@@ -1,7 +1,7 @@
 const userModel = require('../models/user.model')
 const { verifyToken } = require('../helpers/jwt.helper')
 
-const checkRoleAuth = ( roles ) => async (req, res, next) => {
+const checkPermissions = ( permissions ) => async (req, res, next) => {
 
     try {
        
@@ -16,7 +16,7 @@ const checkRoleAuth = ( roles ) => async (req, res, next) => {
         }
         const userData = await userModel.findById(tokenData._id)
 
-        if([].concat(roles).includes(userData.role)) {
+        if([].concat(permissions).includes(userData.permissions)) {
             next()
         } else {
             res.status(403).send({msg: 'Perfil de Usuario No Autorizado'})
@@ -30,4 +30,4 @@ const checkRoleAuth = ( roles ) => async (req, res, next) => {
 
 }
 
-module.exports = { checkRoleAuth }
+module.exports = { checkPermissions}

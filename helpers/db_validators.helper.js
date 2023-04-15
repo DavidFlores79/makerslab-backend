@@ -5,6 +5,7 @@ const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
+const modulePermisionRoleModel = require('../models/module_permission_role.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -111,6 +112,21 @@ const existProductName = async (name = '', {req}) => {
 
 }
 
+const existProfile = async (module = '', {req}  ) => {
+
+    const { role } = req.body;
+    console.log('module exist', module);
+    console.log('role exist', role);
+        
+    const existeModule = await modulePermisionRoleModel.findOne ({ module, role })
+    //valida si el registro a actualizar es el mismo que
+    //fue encontrado deja guardar el mismo valor
+    if(existeModule) {
+        throw new Error(`El registro ya existe.`)
+    }
+
+}
+
 const validateProductById = async ( id ) => {
 
     const dataExist = await productModel.findById(id)
@@ -121,7 +137,7 @@ const validateProductById = async ( id ) => {
 }
 
 const validateRoleById = async ( id ) => {
-
+    console.log('role: ', id);
     const dataExist = await roleModel.findById(id)
     if(!dataExist) {
         throw new Error(`El role con el id: ${ id } no existe en BD.`)
@@ -171,11 +187,23 @@ const validateRoute = async (route = '', {req}) => {
 }
 
 const validateModuleById = async ( id ) => {
-    console.log(id);
+    console.log('module: ', id);
     const moduleExist = await moduleModel.findById(id)
     if(!moduleExist) {
         throw new Error(`El modulo con el id: ${ id } no existe en BD.`)
     }
+}
+
+/** Validar un array de ID's de Mongo */
+const validateModulesById = async ( modules = [] ) => {
+    console.log('modules', modules);
+    modules.forEach( async module => {
+        const moduleExist = await moduleModel.findById(module)
+        console.log('module', module);
+        if(!moduleExist) {
+            throw new Error(`El modulo con el id: ${ module } no existe en BD.`)
+        }
+    });
 }
 
 const validatePermissionById = async ( id ) => {
@@ -185,6 +213,15 @@ const validatePermissionById = async ( id ) => {
         throw new Error(`El modulo con el id: ${ id } no existe en BD.`)
     }
 }
+
+const validateProfileById = async ( id ) => {
+    console.log(id);
+    const profileExist = await modulePermisionRoleModel.findById(id)
+    if(!profileExist) {
+        throw new Error(`El perfil con el id: ${ id } no existe en BD.`)
+    }
+}
+
 
 module.exports = { 
     validateRole, 
@@ -200,5 +237,8 @@ module.exports = {
     coleccionesPermitidas,
     validateRoute,
     validateModuleById,
-    validatePermissionById
+    validateModulesById,
+    validatePermissionById,
+    existProfile,
+    validateProfileById
 }

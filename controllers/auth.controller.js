@@ -9,7 +9,7 @@ const login = async (req, res) => {
 
     try {
 
-        const user = await userModel.findOne({ email })
+        const user = await userModel.findOne({ email }).populate('role')
 
         if(!user) {
             return res.status(400).send({
@@ -59,7 +59,7 @@ const googleSignIn = async(req, res) => {
     try {
         const { name, image, email } = await googleVerifyToken( id_token )
         
-        const user = await userModel.findOne({ email })
+        const user = await userModel.findOne({ email }).populate('role');
 
         if(!user) {
 

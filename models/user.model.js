@@ -20,9 +20,9 @@ const UserSchema = Schema({
         default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
     },
     role: {
-        type: String,
-        required: [true, 'El Rol es obligatorio'],
-        default: 'USER_ROLE',
+        type: Schema.Types.ObjectId,
+        ref: 'Role',
+        required: [true, 'El id del role es obligatorio']
     },
     status: {
         type: Boolean,

@@ -7,6 +7,13 @@ const RoleSchema = Schema({
         required: [true, 'El nombre es obligatorio'],
         // enum : ['USER_ROLE','ADMIN_ROLE','VENTAS_ROLE'],
     },
+    modules: [
+        {
+            type: Schema.Types.ObjectId,
+            required: [true, 'El id del módulo es obligatorio'],
+            ref: 'Module',
+        },
+    ],
     status: {
         type: Boolean,
         default: true
