@@ -24,8 +24,8 @@ router.put('/:id', [
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
     check('name').custom( existRoleName ),
-    check('modules.*', 'No es un id válido.').isMongoId(),
-    check('modules.*').custom( validateModuleById ),
+    check('modules', 'No es un id válido.').isMongoId(),
+    check('modules').custom( validateModuleById ),
     Validator
 ], updateData);
 

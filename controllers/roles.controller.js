@@ -19,9 +19,11 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, status } = req.body
-    const role = await new Role({ name, status }).populate('modules')
-    
+    const { name, status, modules } = req.body
+    const NAME = name.toUpperCase();
+    const role = await new Role({ name: NAME, status, modules }).populate('modules')
+
+    console.log('role para guardar', role);
     try {
 
         //validar si existe el rol
@@ -37,7 +39,7 @@ postData = async (req, res) => {
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            role
+            data: role
         });
         
     } catch (error) {   
@@ -54,7 +56,7 @@ updateData = async (req, res) => {
     const { _id, name, modules, ...resto } = req.body
     
     try {
-       
+
         //guardar en la BD
         const data = await roleModel.findByIdAndUpdate(id, {
             name,

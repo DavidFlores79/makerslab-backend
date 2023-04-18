@@ -14,9 +14,12 @@ const checkRoleAuth = ( roles ) => async (req, res, next) => {
         if(!tokenData) {
             return res.status(401).send({msg: 'Token no válido. **'})
         }
-        const userData = await userModel.findById(tokenData._id)
+        const userData = await userModel.findById(tokenData._id).populate('role')
+        
+        // console.log('roles', roles);
+        // console.log('role de usuario', userData.role);
 
-        if([].concat(roles).includes(userData.role)) {
+        if([].concat(roles).includes(userData.role.name)) {
             next()
         } else {
             res.status(403).send({msg: 'Perfil de Usuario No Autorizado'})
