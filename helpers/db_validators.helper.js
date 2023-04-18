@@ -137,7 +137,7 @@ const validateProductById = async ( id ) => {
 }
 
 const validateRoleById = async ( id ) => {
-    console.log('role: ', id);
+    // console.log('role: ', id);
     const dataExist = await roleModel.findById(id)
     if(!dataExist) {
         throw new Error(`El role con el id: ${ id } no existe en BD.`)
@@ -187,24 +187,13 @@ const validateRoute = async (route = '', {req}) => {
 }
 
 const validateModuleById = async ( id ) => {
-    console.log('module: ', id);
+    // console.log('module: ', id);
     const moduleExist = await moduleModel.findById(id)
     if(!moduleExist) {
         throw new Error(`El modulo con el id: ${ id } no existe en BD.`)
     }
 }
 
-/** Validar un array de ID's de Mongo */
-const validateModulesById = async ( modules = [] ) => {
-    console.log('modules', modules);
-    modules.forEach( async module => {
-        const moduleExist = await moduleModel.findById(module)
-        console.log('module', module);
-        if(!moduleExist) {
-            throw new Error(`El modulo con el id: ${ module } no existe en BD.`)
-        }
-    });
-}
 
 const validatePermissionById = async ( id ) => {
     console.log(id);
@@ -237,7 +226,6 @@ module.exports = {
     coleccionesPermitidas,
     validateRoute,
     validateModuleById,
-    validateModulesById,
     validatePermissionById,
     existProfile,
     validateProfileById

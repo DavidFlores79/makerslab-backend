@@ -51,12 +51,16 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, ...resto } = req.body
-
+    const { _id, name, modules, ...resto } = req.body
+    
     try {
        
         //guardar en la BD
-        const data = await roleModel.findByIdAndUpdate(id, resto, {
+        const data = await roleModel.findByIdAndUpdate(id, {
+            name,
+            modules,
+            ...resto
+        }, {
             new: true
         }).populate('modules');
         

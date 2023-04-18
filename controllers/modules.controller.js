@@ -51,7 +51,7 @@ updateData = async (req, res) => {
     const { id } = req.params
     const { _id, name, route, ...resto } = req.body
 
-    console.log('resto', resto);
+    console.log('resto *******', resto);
 
     let NAME = name.toUpperCase()
     let ROUTE = route.toLowerCase()
@@ -66,6 +66,7 @@ updateData = async (req, res) => {
         }, {
             new: true
         })
+
         res.send({
            msg: `Se ha actualizado el registro`,
            data

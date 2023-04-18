@@ -15,16 +15,16 @@ router.get('/:id', [
 router.post('/',[
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('status', 'El status debe ser de tipo Boolean.').isBoolean(),
-    check('modules.*').custom( validateModuleById ),
     check('name').custom( existRoleName ),
+    check('modules.*', 'No es un id válido.').isMongoId(),
+    check('modules.*').custom( validateModuleById ),
     Validator
 ], postData);
 router.put('/:id', [
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
     check('name').custom( existRoleName ),
-    check('modules', 'No es un id válido.').isMongoId(),
-    Validator,
+    check('modules.*', 'No es un id válido.').isMongoId(),
     check('modules.*').custom( validateModuleById ),
     Validator
 ], updateData);
