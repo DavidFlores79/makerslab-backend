@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs')
 const modulePermisionRoleModel = require('../models/module_permission_role.model')
 
 getData = async (req, res) => {
@@ -21,6 +20,25 @@ getData = async (req, res) => {
 
 getProfile = async (req, res) => {
 
+    const { role_id, module_id } = req.params
+
+    const { limite = 0, desde = 0 } = req.query
+
+    const data = await modulePermisionRoleModel.findOne({ role: role_id, module: module_id })
+        .limit(limite)
+        .skip(desde)
+        .populate('module')
+        .populate('role')
+        .populate('permissions')
+
+    res.send({
+        data
+    })
+
+}
+
+getProfileByRole = async (req, res) => {
+
     const { role_id } = req.params
 
     const { limite = 0, desde = 0 } = req.query
@@ -29,35 +47,47 @@ getProfile = async (req, res) => {
         .limit(limite)
         .skip(desde)
         .populate('module')
-        .populate('role')
-        .populate('permissions')
+        .sort( { module: 1 } )
 
     res.send({
-        total: data.length,
-        data
+        data,
     })
 
 }
 
 postData = async (req, res) => {
 
-    const { module, role, permissions } = req.body
-
-    const data = await new modulePermisionRoleModel({ module, role, permissions })
-        .populate('module')
-        .populate('role')
-        .populate('permissions')
-
-
     try {
 
-        //guardar en la BD
-        await data.save()
+        const { profile } = req.body
 
-        res.status(201).send({
-            msg: 'Registro creado correctamente.',
-            data
+        profile.forEach( async ({ module, role, permissions }) => {
+                        
+            const existeProfile = await modulePermisionRoleModel.findOne({ module, role })
+    
+            if (existeProfile) {
+                //guardar en la BD
+                const data = await modulePermisionRoleModel.findOneAndUpdate({ module, role }, {
+                    module,
+                    role,
+                    permissions
+                }, {
+                    new: true
+                })
+            } else {
+    
+                const data = await new modulePermisionRoleModel({ module, role, permissions }).populate('permissions', 'modules')
+    
+                //guardar en la BD
+                await data.save()    
+            }
         });
+
+        return res.send({
+            msg: `Se ha actualizado el registro`,
+            // data
+        });
+
 
     } catch (error) {
         console.log(error);
@@ -127,4 +157,4 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData, getProfile }
+module.exports = { getData, postData, updateData, deleteData, getProfile, getProfileByRole }

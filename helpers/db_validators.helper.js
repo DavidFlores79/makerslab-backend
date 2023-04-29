@@ -118,10 +118,10 @@ const existProfile = async (module = '', {req}  ) => {
     console.log('module exist', module);
     console.log('role exist', role);
         
-    const existeModule = await modulePermisionRoleModel.findOne ({ module, role })
+    const existeProfile = await modulePermisionRoleModel.findOne ({ module, role })
     //valida si el registro a actualizar es el mismo que
     //fue encontrado deja guardar el mismo valor
-    if(existeModule) {
+    if(existeProfile) {
         throw new Error(`El registro ya existe.`)
     }
 

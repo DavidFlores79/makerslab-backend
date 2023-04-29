@@ -8,7 +8,7 @@ getData = async (req, res) => {
     const data = await Role.find({ deleted: false, status: true })
             .limit(limite)
             .skip(desde)
-            .populate('modules')
+            // .populate('modules')
 
     res.send({
         total: data.length,
@@ -21,7 +21,7 @@ postData = async (req, res) => {
 
     const { name, status, modules } = req.body
     const NAME = name.toUpperCase();
-    const role = await new Role({ name: NAME, status, modules }).populate('modules')
+    const role = await new Role({ name: NAME, status, modules }) //.populate('modules')
 
     console.log('role para guardar', role);
     try {
@@ -53,18 +53,19 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, name, modules, ...resto } = req.body
+    const { _id, name, ...resto } = req.body
     
     try {
 
         //guardar en la BD
         const data = await roleModel.findByIdAndUpdate(id, {
             name,
-            modules,
+            // modules,
             ...resto
         }, {
             new: true
-        }).populate('modules');
+        })
+        // .populate('modules');
         
         res.send({
            msg: `Se ha actualizado el registro`,
@@ -87,7 +88,7 @@ showData = async (req, res) => {
     try {
        
         //guardar en la BD
-        const data = await roleModel.findById(id).populate('modules');
+        const data = await roleModel.findById(id) //.populate('modules');
         
         res.send({
            msg: `Registro encontrado.`,
