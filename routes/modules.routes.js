@@ -5,9 +5,12 @@ const { validateRoute, validateModuleById, validatePermissionById } = require('.
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
+const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
-router.get('/', getData);
+router.get('/', [
+    // checkPermissions(['VISUALIZAR'])
+], getData);
 router.post('/',[
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('route', 'La Ruta es obligatoria.').not().isEmpty(),

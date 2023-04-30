@@ -1,4 +1,5 @@
 const modulePermisionRoleModel = require('../models/module_permission_role.model')
+const permissionModel = require('../models/permission.model')
 
 getData = async (req, res) => {
 
@@ -47,12 +48,69 @@ getProfileByRole = async (req, res) => {
         .limit(limite)
         .skip(desde)
         .populate('module')
-        .sort( { module: 1 } )
+        .sort({ module: 1 })
 
     res.send({
         data,
     })
 
+}
+
+getMenuByRole = async (req, res) => {
+
+    const { role_id } = req.params
+
+    const { limite = 0, desde = 0 } = req.query
+
+    const viewPermission = await permissionModel.findOne({ name: 'VISUALIZAR' });
+
+    const data = await modulePermisionRoleModel.find({
+        role: role_id, permissions: {
+            $in: [
+                viewPermission._id
+            ]
+        }
+    })
+        .limit(limite)
+        .skip(desde)
+        .populate('module')
+        // .populate('permissions')
+        .sort({ module: 1 })
+
+    res.send({
+        data,
+    })
+
+}
+
+getUserMenu = async ( role ) => {
+
+    // const { limite = 0, desde = 0 } = req.query
+
+    const viewPermission = await permissionModel.findOne({ name: 'VISUALIZAR' });
+
+    const data = await modulePermisionRoleModel.find({
+        role: role, permissions: {
+            $in: [
+                viewPermission._id
+            ]
+        }
+    })
+        .populate('module')
+        .populate('permissions')
+        .sort({ module: 1 })
+
+        const menu = data.map(element => {
+            let permissions = element.permissions.map(permission => {
+                return permission.name;
+            });
+            return {
+                name: element.module.route,
+                permissions
+            };
+        });
+
+    return menu;
 }
 
 postData = async (req, res) => {
@@ -61,10 +119,10 @@ postData = async (req, res) => {
 
         const { profile } = req.body
 
-        profile.forEach( async ({ module, role, permissions }) => {
-                        
+        profile.forEach(async ({ module, role, permissions }) => {
+
             const existeProfile = await modulePermisionRoleModel.findOne({ module, role })
-    
+
             if (existeProfile) {
                 //guardar en la BD
                 const data = await modulePermisionRoleModel.findOneAndUpdate({ module, role }, {
@@ -75,11 +133,11 @@ postData = async (req, res) => {
                     new: true
                 })
             } else {
-    
+
                 const data = await new modulePermisionRoleModel({ module, role, permissions }).populate('permissions', 'modules')
-    
+
                 //guardar en la BD
-                await data.save()    
+                await data.save()
             }
         });
 
@@ -157,4 +215,4 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData, getProfile, getProfileByRole }
+module.exports = { getData, postData, updateData, deleteData, getProfile, getProfileByRole, getMenuByRole, getUserMenu }

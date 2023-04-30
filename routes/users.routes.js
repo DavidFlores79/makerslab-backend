@@ -9,7 +9,7 @@ const { checkPermissions } = require('../middlewares/permission-validator.middle
 const router = Router()
 
 router.get('/', [
-    // checkPermissions(['VISUALIZAR'])
+    checkPermissions(['VISUALIZAR'])
 ], getData);
 router.post('/',[
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
@@ -26,6 +26,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    // checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
     // check('role').custom( validateRole ),
