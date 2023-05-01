@@ -83,6 +83,13 @@ const uploadImage = async (req, res) => {
       }
       // console.log(product);
       break;
+    case 'posters':
+      modelo = await permissionModel.findById(id)
+      if (!modelo) {
+        return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
+      }
+      // console.log(product);
+      break;
     default:
       return res.status(500).send({ msg: 'Esta colección no está permitida para carga de archivos.' })
   }
@@ -155,6 +162,13 @@ const uploadImageCloudinary = async (req, res) => {
       // console.log(product);
       break;
     case 'permissions':
+      modelo = await permissionModel.findById(id)
+      if (!modelo) {
+        return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
+      }
+      // console.log(product);
+      break;
+    case 'posters':
       modelo = await permissionModel.findById(id)
       if (!modelo) {
         return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
@@ -267,6 +281,13 @@ const showImage = async (req, res) => {
       // console.log(product);
       break;
     case 'permissions':
+      modelo = await permissionModel.findById(id)
+      if (!modelo) {
+        return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
+      }
+      // console.log(product);
+      break;
+    case 'posters':
       modelo = await permissionModel.findById(id)
       if (!modelo) {
         return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })

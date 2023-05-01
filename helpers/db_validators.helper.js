@@ -3,6 +3,7 @@ const categoryModel = require('../models/category.model');
 const Role = require('../models/role.model');
 const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
+const posterModel = require('../models/poster.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
 const modulePermisionRoleModel = require('../models/module_permission_role.model');
@@ -112,6 +113,25 @@ const existProductName = async (name = '', {req}) => {
 
 }
 
+const existPosterName = async (name = '', {req}) => {
+
+    const id = req.params.id
+    const existeName = await posterModel.findOne({ name })
+    
+    //valida si el registro a actualizar es el mismo que
+    //fue encontrado deja guardar el mismo valor
+    if(id && existeName) {
+        if(String(existeName._id) != id) {
+            throw new Error(`El registro ${ name } ya existe.`)
+        }
+    } else {
+        if(existeName) {
+            throw new Error(`El registro ${ name } ya existe.`)
+        }
+    }
+
+}
+
 const existProfile = async (module = '', {req}  ) => {
 
     const { role } = req.body;
@@ -130,6 +150,15 @@ const existProfile = async (module = '', {req}  ) => {
 const validateProductById = async ( id ) => {
 
     const dataExist = await productModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
+const validatePosterById = async ( id ) => {
+
+    const dataExist = await posterModel.findById(id)
     if(!dataExist) {
         throw new Error(`El registro con el id: ${ id } no existe en BD.`)
     }
@@ -228,5 +257,7 @@ module.exports = {
     validateModuleById,
     validatePermissionById,
     existProfile,
-    validateProfileById
+    validateProfileById,
+    validatePosterById,
+    existPosterName
 }
