@@ -62,24 +62,34 @@ getMenuByRole = async (req, res) => {
 
     const { limite = 0, desde = 0 } = req.query
 
-    const viewPermission = await permissionModel.findOne({ name: 'VISUALIZAR' });
+    
+    try {
+        const viewPermission = await permissionModel.findOne({ name: 'VISUALIZAR' });
 
-    const data = await modulePermisionRoleModel.find({
-        role: role_id, permissions: {
-            $in: [
-                viewPermission._id
-            ]
-        }
-    })
-        .limit(limite)
-        .skip(desde)
-        .populate('module')
-        // .populate('permissions')
-        .sort({ module: 1 })
-
-    res.send({
-        data,
-    })
+        const data = await modulePermisionRoleModel.find({
+            role: role_id, permissions: {
+                $in: [
+                    viewPermission._id
+                ]
+            }
+        })
+            .limit(limite)
+            .skip(desde)
+            .populate('module')
+            // .populate('permissions')
+            .sort({ module: 1 })
+    
+        res.send({
+            data,
+        })
+        
+    } catch (error) {   
+        console.log(error);
+        res.status(500).send({
+            msg: 'Error al acceder al menú',
+            error
+        })
+    }
 
 }
 

@@ -1,6 +1,7 @@
 const User = require('../models/user.model')
 const bcrypt = require('bcryptjs')
 const userModel = require('../models/user.model')
+const roleModel = require('../models/role.model')
 
 getData = async (req, res) => {
 
@@ -20,8 +21,16 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, email, password, role, image } = req.body
+    const { name, email, password, image } = req.body
+    let { role } = req.body;
     console.log('user role', role);
+
+    if(!role) {
+        const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
+        role = userRole._id; 
+        console.log('role del user', userRole);
+    }
+
     const data = await new User({ name, email, password, role }).populate('role');
 
     if(image != '') {
