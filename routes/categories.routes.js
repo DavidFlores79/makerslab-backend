@@ -5,10 +5,14 @@ const { existCategoryName, validateCategoryById, existUserId } = require('../hel
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
+const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
-router.get('/', getData);
+router.get('/', [
+    checkPermissions(['VISUALIZAR'])
+], getData);
 router.post('/',[
+    checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('status', 'El status debe ser de tipo Boolean.').isBoolean(),
@@ -16,6 +20,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateCategoryById ),
     check('name').custom( existCategoryName ),
@@ -23,6 +28,7 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
+    checkPermissions(['ELIMINAR']),
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),

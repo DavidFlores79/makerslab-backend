@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { getData, postData, updateData, deleteData } = require('../controllers/users.controller');
+const { getData, postData, updateData, deleteData, getRoles } = require('../controllers/users.controller');
 const { validateRole, validateEmail, validateUserById, validateRoleById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
@@ -11,6 +11,7 @@ const router = Router()
 router.get('/', [
     checkPermissions(['VISUALIZAR'])
 ], getData);
+router.get('/roles', getRoles);
 router.post('/',[
     checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
@@ -38,8 +39,9 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
+    checkPermissions(['ELIMINAR']),
     validarJWT,
-    checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
+    // checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
     Validator

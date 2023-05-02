@@ -30,14 +30,7 @@ router.post('/',[
     check('profile.*.module', 'No es un id válido.').isMongoId(),
     check('profile.*.module').custom( validateModuleById ),
     check('profile.*.role', 'El rol es obligatoria.').not().isEmpty(),
-    // check('role').custom( validateRoleById ),
-    // check('role', 'No es un id válido.').isMongoId(),
-    // body(['module', 'role']).custom( existProfile ),
-    // Validator,
-    // check('permissions.*', 'No es un id válido.').isMongoId(),
-    // Validator,
-    // check('permissions.*').custom( validatePermissionById ),
-    // Validator
+    Validator
 ], postData);
 router.put('/:id', [
     check('id').custom( validateProfileById ),

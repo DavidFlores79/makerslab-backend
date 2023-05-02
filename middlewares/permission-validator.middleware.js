@@ -12,18 +12,18 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
         }
         const token = req.headers.authorization.split(' ').pop()
         const tokenData = await verifyToken (token);
-        const url = req.baseUrl.split('/');
+        const url = req.baseUrl.split('/'); //toma el ultimo tramo de la ruta base para validar los permisos en dicha ruta
         const route = url.pop()+'';
         // console.log('mis datos de ruta: ', req);
         // console.log('mi ruta', route);
 
         if(!tokenData) {
-            return res.status(401).send({msg: 'Token no válido. **'})
+            return res.status(401).send({msg: 'Token no válido. **'}) //Si el token no es valido debera ser redirigido a Home
         }
         const userData = await userModel.findById(tokenData._id);
 
         const menu = await getUserMenu( userData.role );
-        let result = menu.find(menu => menu.name === route);
+        let result = menu.find(menu => menu.name === route); //Busca en el array de rutas del usuario si esta incluido ahi dicha ruta
         console.log('ruta y permisos: ', result);
 
         if(!result) {

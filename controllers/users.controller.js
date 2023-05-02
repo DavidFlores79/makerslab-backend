@@ -116,4 +116,20 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+getRoles = async (req, res) => {
+
+    const { limite = 0, desde= 0 } = req.query
+
+    const data = await roleModel.find({ deleted: false, status: true })
+            .limit(limite)
+            .skip(desde)
+            // .populate('modules')
+
+    res.send({
+        total: data.length,
+        data
+    })
+
+}
+
+module.exports = { getData, postData, updateData, deleteData, getRoles }

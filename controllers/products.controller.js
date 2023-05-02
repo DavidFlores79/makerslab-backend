@@ -1,4 +1,5 @@
 const { verifyToken } = require('../helpers/jwt.helper')
+const categoryModel = require('../models/category.model')
 const productModel = require('../models/product.model')
 const userModel = require('../models/user.model')
 
@@ -124,4 +125,20 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+getCategories = async (req, res) => {
+
+    const { limite = 0, desde= 0 } = req.query
+
+    const data = await categoryModel.find({ deleted: false, status: true })
+            .populate('user_id', ['name', 'email'])
+            .limit(limite)
+            .skip(desde)
+
+    res.send({
+        total: data.length,
+        data
+    })
+
+}
+
+module.exports = { getData, postData, updateData, deleteData, getCategories }

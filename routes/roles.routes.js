@@ -5,10 +5,14 @@ const { existRoleName, validateRoleById, validateModulesById, validateModuleById
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
+const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
-router.get('/', getData);
+router.get('/', [
+    checkPermissions(['VISUALIZAR'])
+], getData);
 router.get('/:id', [
+    checkPermissions(['CREAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
 ], showData);
@@ -21,6 +25,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
     check('name').custom( existRoleName ),
@@ -30,6 +35,7 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
+    checkPermissions(['ELIMINAR']),
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),

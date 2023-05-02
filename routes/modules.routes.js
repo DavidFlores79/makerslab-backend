@@ -9,12 +9,12 @@ const { checkPermissions } = require('../middlewares/permission-validator.middle
 const router = Router()
 
 router.get('/', [
-    // checkPermissions(['VISUALIZAR'])
+    checkPermissions(['VISUALIZAR'])
 ], getData);
 router.post('/',[
+    checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('route', 'La Ruta es obligatoria.').not().isEmpty(),
-        
     //Validacion personalizada que usa el modelo roles
     check('route').custom( validateRoute ),
     // check('permissions.*', 'No es un id válido.').isMongoId(),
@@ -23,6 +23,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateModuleById ),
     check('route').custom( validateRoute ),
@@ -32,6 +33,7 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
+    checkPermissions(['ELIMINAR']),
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
