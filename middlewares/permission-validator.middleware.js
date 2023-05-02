@@ -12,8 +12,10 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
         }
         const token = req.headers.authorization.split(' ').pop()
         const tokenData = await verifyToken (token);
-        const url = req.originalUrl.split('/');
+        const url = req.baseUrl.split('/');
         const route = url.pop()+'';
+        // console.log('mis datos de ruta: ', req);
+        // console.log('mi ruta', route);
 
         if(!tokenData) {
             return res.status(401).send({msg: 'Token no válido. **'})
@@ -26,7 +28,7 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
 
         if(!result) {
             console.log(`Perfil ${userData.role} no autorizado para la ruta ${req.baseUrl}`);
-            return res.status(403).send({msg: 'No tiene permisos para Visualizar'})
+            return res.status(403).send({msg: 'No tiene permisos para Visualizar.'})
         }
 
 
@@ -37,12 +39,12 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
             next();
         } else {
             console.log(`Perfil ${userData.role} no autorizado para la ruta ${req.baseUrl}`);
-            return res.status(401).send({msg: 'Perfil de Usuario No Autorizado'})
+            return res.status(401).send({msg: `${permissions} - Perfil de Usuario No Autorizado.`})
         }
 
     } catch (error) {
         console.log(`Error al obtener el Perfil de Usuario para la ruta ${req.baseUrl}. ${error}`);
-        return res.status(500).send({msg: 'Error al obtener el Perfil de Usuario'})
+        return res.status(500).send({msg: 'Error al obtener el Perfil de Usuario.'})
     }
 
 }

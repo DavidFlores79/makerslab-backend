@@ -12,6 +12,7 @@ router.get('/', [
     checkPermissions(['VISUALIZAR'])
 ], getData);
 router.post('/',[
+    checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('email', 'El email es obligatorio.').not().isEmpty(),
     check('email', 'No es un correo válido.').isEmail(),
@@ -26,7 +27,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
-    // checkPermissions(['MODIFICAR']),
+    checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
     // check('role').custom( validateRole ),
