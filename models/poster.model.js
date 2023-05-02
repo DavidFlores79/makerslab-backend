@@ -3,7 +3,7 @@ const {  Schema, model } = require('mongoose')
 const PosterSchema = Schema({
     name: {
         type: String,
-        unique: [true, 'El nombre debe ser unico'],
+        unique: [true, 'El nombre debe ser único'],
         required: [true, 'El nombre es obligatorio']
     },
     description: {
@@ -13,6 +13,10 @@ const PosterSchema = Schema({
         type: String,
         default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
     },
+    audio: {
+        type: String,
+        default: ''
+    },
     user_id: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -20,6 +24,11 @@ const PosterSchema = Schema({
     },
     authors: {
         type: String,
+    },
+    code: {
+        type: String,
+        unique: [true, 'El código debe ser único'],
+        required: [true, 'El codigo es obligatorio']
     },
     category: {
         type: Schema.Types.ObjectId,

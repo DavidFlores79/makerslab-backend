@@ -21,13 +21,20 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, category, status, available, image, authors  } = req.body
+    const { name, category, status, available, image, audio, authors  } = req.body
     let NAME = name.toUpperCase()
     const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available }).populate('category')
 
     if(image != '') {
         dato.image = image
     }
+
+    if(audio != '') {
+        dato.audio = audio
+    }
+
+    //crear el codigo del poster
+    dato.code = makeid(5);
     
     try {
 
@@ -62,7 +69,7 @@ postData = async (req, res) => {
         }    
 
         res.status(201).send({
-            msg: 'Registro creado correctamente.',
+            msg: `Registro creado correctamente con el código: ${dato.code}.`,
             data: dato
         });
         
@@ -122,6 +129,18 @@ deleteData = async (req, res) => {
             error: error
         })
     }
+}
+
+function makeid(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
 }
 
 module.exports = { getData, postData, updateData, deleteData }

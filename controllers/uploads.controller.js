@@ -6,6 +6,7 @@ const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
+const { options } = require('../routes/posters.routes');
 
 // Configuration 
 cloudinary.config({
@@ -212,7 +213,7 @@ const uploadImageCloudinary = async (req, res) => {
 
 const uploadCloudinary = async (req, res) => {
 
-  const { coleccion } = req.params;
+  let { coleccion } = req.params;
 
   if (!req.files || Object.keys(req.files).length === 0 || !req.files.file0) {
     console.log('files', req.files);
@@ -221,8 +222,10 @@ const uploadCloudinary = async (req, res) => {
 
   //archivo temporal que se guarda al cargar
   const { tempFilePath } = req.files.file0;
+  const { mimetype } = req.files.file0;
+  console.log('file', req.files.file0);
   console.log('temp', tempFilePath);
-
+  console.log('mime', mimetype);
 
   try {
 
@@ -236,7 +239,18 @@ const uploadCloudinary = async (req, res) => {
     // }
 
     // Upload
-    const { secure_url, public_id } = await cloudinary.uploader.upload(tempFilePath, { folder: coleccion })
+    const options = { folder: coleccion }
+
+    if(mimetype == 'audio/mpeg') {
+
+      coleccion = coleccion + '/audios';
+      options.resource_type = "video";
+
+    };
+    console.log('collection', coleccion);
+
+
+    const { secure_url, public_id } = await cloudinary.uploader.upload(tempFilePath, options)
 
     return res.status(201).send({
       msg: `Imagen cargada ó actualizada.`,
