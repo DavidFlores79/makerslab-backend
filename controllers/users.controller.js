@@ -11,10 +11,13 @@ getData = async (req, res) => {
             .limit(limite)
             .skip(desde)
             .populate('role');
+    
+    //filter SUPER_ROLE
+    const users = data.filter( user => user.role.name != 'SUPER_ROLE' );
 
     res.send({
-        total: data.length,
-        data
+        total: users.length,
+        data: users
     })
 
 }
@@ -120,7 +123,7 @@ getRoles = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await roleModel.find({ deleted: false, status: true })
+    const data = await roleModel.find({ deleted: false, status: true, name: {$ne: 'SUPER_ROLE'} })
             .limit(limite)
             .skip(desde)
             // .populate('modules')
