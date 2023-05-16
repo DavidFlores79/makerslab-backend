@@ -22,9 +22,9 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, category, status, available, image, audio, authors  } = req.body
+    const { name, category, status, available, image, audio, authors, code  } = req.body
     let NAME = name.toUpperCase()
-    const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available }).populate('category')
+    const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available, code }).populate('category')
 
     if(image != '') {
         dato.image = image
@@ -35,7 +35,7 @@ postData = async (req, res) => {
     }
 
     //crear el codigo del poster
-    dato.code = makeid(5);
+    // dato.code = makeid(5);
     
     try {
 
