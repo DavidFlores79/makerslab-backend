@@ -5,7 +5,7 @@ getData = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await Role.find({ deleted: false, status: true })
+    const data = await Role.find({ deleted: false, status: true, name: {$ne: 'SUPER_ROLE'} })
             .limit(limite)
             .skip(desde)
             // .populate('modules')

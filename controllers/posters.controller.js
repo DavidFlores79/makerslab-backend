@@ -69,9 +69,9 @@ getMyPoster = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, category, status, available, image, audio, authors, code  } = req.body
+    const { name, category, status, available, image, audio, authors, code, contactEmail } = req.body
     let NAME = name.toUpperCase()
-    const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available, code }).populate('category')
+    const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available, code, contactEmail }).populate('category')
 
     if(image != '') {
         dato.image = image

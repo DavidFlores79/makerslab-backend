@@ -30,6 +30,9 @@ const PosterSchema = Schema({
         unique: [true, 'El código debe ser único'],
         required: [true, 'El codigo es obligatorio']
     },
+    contactEmail: {
+        type: String,
+    },
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category',

@@ -17,7 +17,7 @@ const UserSchema = Schema({
     },
     image: {
         type: String,
-        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
+        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1684249857/files/63f5014ee1ea6226ba9dbfd3_gmwwgx.png'
     },
     role: {
         type: Schema.Types.ObjectId,
