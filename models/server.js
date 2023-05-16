@@ -9,6 +9,7 @@ const rolesRoutes = require("../routes/roles.routes");
 const categoriesRoutes = require("../routes/categories.routes");
 const productsRoutes = require("../routes/products.routes");
 const postersRoutes = require("../routes/posters.routes");
+const userPosterRoutes = require("../routes/userposter.routes");
 const authRoutes = require("../routes/auth.routes");
 const searchRoutes = require("../routes/search.routes");
 const uploadRoutes = require("../routes/uploads.routes");
@@ -69,6 +70,7 @@ class Server {
     this.app.use("/api/categories", categoriesRoutes);
     this.app.use("/api/products", productsRoutes);
     this.app.use("/api/posters", postersRoutes);
+    this.app.use("/api/myposter", userPosterRoutes);
     this.app.use("/api/modules", modulesRoutes);
     this.app.use("/api/permissions", permissionsRoutes);
     this.app.use("/api/profiles", modulePermissionRoleRoutes);

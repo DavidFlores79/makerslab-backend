@@ -2,6 +2,7 @@ const userModel = require('../models/user.model')
 const { verifyToken } = require('../helpers/jwt.helper')
 const permissionModel = require('../models/permission.model')
 const module_permission_roleModel = require('../models/module_permission_role.model')
+const { getUserMenu } = require('../controllers/module_permission_role.controller')
 
 const checkPermissions = ( permissions ) => async (req, res, next) => {
 

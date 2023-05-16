@@ -20,6 +20,53 @@ getData = async (req, res) => {
 
 }
 
+getMyPoster = async (req, res) => {
+
+    const { limite = 0, desde= 0 } = req.query
+
+    try {
+
+        //extraer usuario logueado del token
+        const token = req.headers.authorization.split(' ').pop()
+        const tokenData = await verifyToken(token)
+
+        if(!tokenData) {
+            return res.status(401).send({msg: 'Token no válido. *'})
+        }
+    
+        usuario = await userModel.findById(tokenData._id)
+        if(!usuario.status || usuario.deleted || !usuario) {
+            res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
+            console.log('Usuario Bloqueado. Sin Permisos');
+        } else {
+            console.log('usuario: ', usuario);
+            //validar si existe el registro
+            const poster = await posterModel.findOne({ deleted: false, status: true, user_id: usuario.id })
+                                            .populate('user_id', ['name', 'email'])
+                                            .populate('category')
+                                            .limit(limite)
+                                            .skip(desde)
+            if( poster ) {
+                return res.send({
+                    msg: `Poster encontrado con el código: ${poster.code}.`,
+                    data: poster
+                });
+            } else {
+                return res.status(404).send({
+                    msg: `Poster no encontrado.`,
+                });
+            }
+        }
+    } catch (error) {   
+        console.log(error);
+        return res.status(500).send({
+            msg: 'Error al leer el registro',
+            error
+        })
+    }
+
+}
+
 postData = async (req, res) => {
 
     const { name, category, status, available, image, audio, authors, code  } = req.body
@@ -160,4 +207,4 @@ getCategories = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData,getCategories }
+module.exports = { getData, postData, updateData, deleteData,getCategories, getMyPoster }
