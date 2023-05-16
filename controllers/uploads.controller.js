@@ -223,12 +223,25 @@ const uploadCloudinary = async (req, res) => {
   //archivo temporal que se guarda al cargar
   const { tempFilePath } = req.files.file0;
   const { mimetype } = req.files.file0;
+  const { size } = req.files.file0;
   console.log('file', req.files.file0);
   console.log('temp', tempFilePath);
   console.log('mime', mimetype);
+  console.log('size *****', size);
 
   try {
 
+    if(size > 2097152 && mimetype == 'audio/mpeg') {
+      return res.status(404).send({
+        msg: `Archivo de audio máximo 2MB.`,
+      })
+    }
+
+    if(size > 5242880 && mimetype == 'application/pdf') {
+      return res.status(404).send({
+        msg: `Archivo PDF máximo 5MB.`,
+      })
+    }
     //una vez cargado el archivo puedo borrar el anterior
     // if(modelo.image) {
     //   const arrayName = modelo.image.split('/')
