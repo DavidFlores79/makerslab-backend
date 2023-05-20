@@ -20,6 +20,23 @@ getData = async (req, res) => {
 
 }
 
+getHomePosters = async (req, res) => {
+
+    const { limite = 0, desde= 0 } = req.query
+
+    const data = await posterModel.find({ deleted: false, status: true })
+            .populate('user_id', ['name', 'email'])
+            .populate('category')
+            .limit(limite)
+            .skip(desde)
+
+    res.send({
+        total: data.length,
+        data
+    })
+
+}
+
 getMyPoster = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
@@ -207,4 +224,4 @@ getCategories = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData,getCategories, getMyPoster }
+module.exports = { getData, postData, updateData, deleteData,getCategories, getMyPoster, getHomePosters }
