@@ -37,6 +37,24 @@ getHomePosters = async (req, res) => {
 
 }
 
+getHomePostersByCategory = async (req, res) => {
+
+    const { limite = 0, desde= 0 } = req.query
+    const { category } = req.params
+
+    const data = await posterModel.find({ deleted: false, status: true, category: category })
+            .populate('user_id', ['name', 'email'])
+            .populate('category')
+            .limit(limite)
+            .skip(desde)
+
+    res.send({
+        total: data.length,
+        data
+    })
+
+}
+
 getMyPoster = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
@@ -127,10 +145,10 @@ postData = async (req, res) => {
 
             //id del usuario logueado
             dato.user_id = tokenData._id 
-            //console.log(product);
-
+            
             //guardar en la BD
             await dato.save()
+            console.log(`${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
         }    
 
         res.status(201).send({
@@ -152,11 +170,23 @@ updateData = async (req, res) => {
     const { _id, ...resto } = req.body
 
     try {
+
+        //extraer usuario logueado del token
+        const token = req.headers.authorization.split(' ').pop()
+        const tokenData = await verifyToken(token)
+
+        if(!tokenData) {
+            return res.status(401).send({msg: 'Token no válido. *'})
+        }
+    
+        usuario = await userModel.findById(tokenData._id)
        
         //guardar en la BD
         const data = await posterModel.findByIdAndUpdate(id, resto, {
             new: true
         }).populate('category').populate('user_id', ['name', 'email'])
+
+        console.log(`${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
         
         res.send({
            msg: `Se ha actualizado el registro`,
@@ -224,4 +254,4 @@ getCategories = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData,getCategories, getMyPoster, getHomePosters }
+module.exports = { getData, postData, updateData, deleteData,getCategories, getMyPoster, getHomePosters, getHomePostersByCategory }

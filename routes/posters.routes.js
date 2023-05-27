@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { getData, postData, updateData, deleteData, getCategories, getMyPoster, getHomePosters } = require('../controllers/posters.controller');
+const { getData, postData, updateData, deleteData, getCategories, getMyPoster, getHomePosters, getHomePostersByCategory } = require('../controllers/posters.controller');
 const { validateCategoryById, existPosterName, validatePosterById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
@@ -13,6 +13,7 @@ router.get('/', [
 ], getData);
 router.get('/myposter', getMyPoster);
 router.get('/homepage', getHomePosters);
+router.get('/homepage/:category', getHomePostersByCategory);
 router.get('/categories', getCategories);
 router.post('/',[
     checkPermissions(['CREAR']),
