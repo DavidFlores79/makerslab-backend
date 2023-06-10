@@ -2,6 +2,7 @@ const User = require('../models/user.model')
 const bcrypt = require('bcryptjs')
 const userModel = require('../models/user.model')
 const roleModel = require('../models/role.model')
+const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 
 getData = async (req, res) => {
 
@@ -48,6 +49,9 @@ postData = async (req, res) => {
         
         //guardar en la BD
         await data.save()
+        
+        sendNotificationEmail('NUEVO USUARIO', 
+        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}`);
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
