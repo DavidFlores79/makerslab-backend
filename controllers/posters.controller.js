@@ -2,6 +2,7 @@ const { verifyToken } = require('../helpers/jwt.helper')
 const categoryModel = require('../models/category.model')
 const posterModel = require('../models/poster.model')
 const userModel = require('../models/user.model')
+const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 
 getData = async (req, res) => {
 
