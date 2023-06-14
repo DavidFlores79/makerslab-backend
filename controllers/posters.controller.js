@@ -191,7 +191,7 @@ updateData = async (req, res) => {
             new: true
         }).populate('category').populate('user_id', ['name', 'email'])
 
-        console.log(`${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
+        console.log(`${usuario.name} ha modificado el nuevo Cartel ${data.name}`);
 
         res.send({
             msg: `Se ha actualizado el registro`,
