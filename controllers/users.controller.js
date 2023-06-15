@@ -51,7 +51,7 @@ postData = async (req, res) => {
         await data.save()
         
         sendNotificationEmail('NUEVO USUARIO', 
-        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}`);
+        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',

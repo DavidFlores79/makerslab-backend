@@ -151,7 +151,7 @@ postData = async (req, res) => {
             await dato.save();
             
             sendNotificationEmail('NUEVO CARTEL',
-                `${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
+                `${usuario.name} ha creado el nuevo Cartel ${dato.name}.`);
 
             console.log(`${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
 
