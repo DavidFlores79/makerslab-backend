@@ -1,9 +1,9 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { login, googleSignIn } = require('../controllers/auth.controller');
+const { login, googleSignIn, register } = require('../controllers/auth.controller');
 const { validateLoginEmail, validateEmail } = require('../helpers/db_validators.helper');
 const { Validator } = require('../middlewares/validator.middleware');
-const { postData } = require('../controllers/users.controller');
+// const { postData } = require('../controllers/users.controller');
 const router = Router()
 
 router.post('/login',[
@@ -22,7 +22,7 @@ router.post('/register',[
     check('password', 'El password debe contener más de 6 caracteres.').isLength({ min: 6 }),
     check('email').custom( validateEmail ),
     Validator
-], postData);
+], register);
 
 router.post('/google-auth',[
     check('id_token', 'Google Token es obligatorio.').not().isEmpty(),
