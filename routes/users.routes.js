@@ -33,8 +33,8 @@ router.put('/:id', [
     check('id').custom( validateUserById ),
     // check('role').custom( validateRole ),
     check('email').custom( validateEmail ),
-    check('role._id', 'No es un id válido.').isMongoId(),
-    check('role._id').custom( validateRoleById ),
+    check('role._id', 'No es un id válido.').optional().isMongoId(),
+    check('role._id').optional().custom( validateRoleById ),
     Validator
 ], updateData);
 
