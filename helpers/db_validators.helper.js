@@ -7,6 +7,7 @@ const posterModel = require('../models/poster.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
 const modulePermisionRoleModel = require('../models/module_permission_role.model');
+const paymentMethodModel = require('../models/payment_method.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -240,6 +241,34 @@ const validateProfileById = async ( id ) => {
     }
 }
 
+/**Payment Methods */
+const existPaymentMethodName = async (name = '', {req}) => {
+
+    const id = req.params.id
+    const existeName = await paymentMethodModel.findOne({ name })
+    
+    //valida si el registro a actualizar es el mismo que
+    //fue encontrado deja guardar el mismo valor
+    if(id && existeName) {
+        if(String(existeName._id) != id) {
+            throw new Error(`El método de pago ${ name } ya está registrado.`)
+        }
+    } else {
+        if(existeName) {
+            throw new Error(`El método de pago ${ name } ya está registrado.`)
+        }
+    }
+
+}
+const validatePaymentMethodById = async ( id ) => {
+
+    const dataExist = await paymentMethodModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El método con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
 
 module.exports = { 
     validateRole, 
@@ -259,5 +288,7 @@ module.exports = {
     existProfile,
     validateProfileById,
     validatePosterById,
-    existPosterName
+    existPosterName,
+    existPaymentMethodName,
+    validatePaymentMthodById: validatePaymentMethodById,
 }
