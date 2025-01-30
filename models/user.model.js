@@ -24,6 +24,10 @@ const UserSchema = Schema({
         ref: 'Role',
         required: [true, 'El id del role es obligatorio']
     },
+    event_participant: {
+        type: Schema.Types.ObjectId,
+        ref: 'EventParticipant',
+    },
     status: {
         type: Boolean,
         default: true

@@ -12,6 +12,8 @@ const paymentModel = require('../models/payment.model');
 const summaryModel = require('../models/summary.model');
 const summaryStatusModel = require('../models/summary_estatus.model');
 const occupationModel = require('../models/occupation.model');
+const eventParticipantModel = require('../models/event_participant.model');
+const eventParticipationModeModel = require('../models/event_participation_modes.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -311,7 +313,22 @@ const validateOccupationById = async ( id ) => {
     if(!dataExist) {
         throw new Error(`El registro con el id: ${ id } no existe en BD.`)
     }
+}
 
+/** Event Paticipant */
+const validateEventParticipantById = async ( id ) => {
+    const dataExist = await eventParticipantModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+}
+
+/** Event Paticipant */
+const validateEventParticipationModeById = async ( id ) => {
+    const dataExist = await eventParticipationModeModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
 }
 
 module.exports = { 
@@ -339,4 +356,6 @@ module.exports = {
     validateSummaryById,
     validateSummaryStatusById,
     validateOccupationById,
+    validateEventParticipantById,
+    validateEventParticipationModeById,
 }
