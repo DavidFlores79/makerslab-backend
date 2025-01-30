@@ -8,8 +8,8 @@ getData = async (req, res) => {
     const { limite = 0, desde= 0 } = req.query
 
     const data = await paymentModel.find({ deleted: false, status: true })
-            .populate('user', ['name', 'email'])
-            .populate('payer', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
+            .populate('owner', ['name', 'email'])
             .populate('payment_method')
             .limit(limite)
             .skip(desde)
@@ -23,9 +23,9 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { description, comments, payment_method, amount, image, payer_id  } = req.body
+    const { description, comments, payment_method, amount, image, owner  } = req.body
     // let NAME = name.toUpperCase()
-    const payment = await new paymentModel({ description, comments, payment_method, amount, payer: payer_id })
+    const payment = await new paymentModel({ description, comments, payment_method, amount, owner })
 
     if(image != '') {
         payment.image = image
@@ -41,14 +41,14 @@ postData = async (req, res) => {
             return res.status(401).send({msg: 'Token no válido. *'})
         }
     
-        user = await userModel.findById(tokenData._id)
+        const user = await userModel.findById(tokenData._id)
         if(!user.status || user.deleted || !user) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
 
             //id del usuario logueado
-            payment.user = tokenData._id 
+            payment.creator = tokenData._id 
             //console.log(product);
 
             //guardar en la BD
@@ -78,7 +78,7 @@ updateData = async (req, res) => {
         //guardar en la BD
         const data = await paymentModel.findByIdAndUpdate(id, resto, {
             new: true
-        }).populate('user', ['name', 'email']).populate('payer', ['name', 'email']).populate('payment_method')
+        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method')
         
         res.send({
            msg: `Se ha actualizado el registro`,
@@ -123,7 +123,7 @@ getPaymentMethods = async (req, res) => {
     const { limite = 0, desde= 0 } = req.query
 
     const data = await paymentMethodModel.find({ deleted: false, status: true })
-            .populate('user', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
             .limit(limite)
             .skip(desde)
 

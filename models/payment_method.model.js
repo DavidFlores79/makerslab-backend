@@ -17,7 +17,7 @@ const PaymentMethodSchema = Schema({
         type: Boolean,
         default: false
     },
-    user_id: {
+    creator: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'El id del usuario es obligatorio']

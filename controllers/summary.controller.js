@@ -1,13 +1,14 @@
 const { verifyToken } = require('../helpers/jwt.helper')
-const paymentMethodModel = require('../models/payment_method.model')
+const summaryModel = require('../models/summary.model')
 const userModel = require('../models/user.model')
 
 getData = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await paymentMethodModel.find({ deleted: false, status: true })
-            .populate('creator', ['name', 'description'])
+    const data = await summaryModel.find({ deleted: false, status: true })
+            .populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
             .limit(limite)
             .skip(desde)
 
@@ -20,19 +21,15 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name  } = req.body
-    let NAME = name.toUpperCase()
-    const paymentMethod = await new paymentMethodModel({ name: NAME })
+    const { title, comments, owner, image  } = req.body
+    // let NAME = name.toUpperCase()
+    const summary = await new summaryModel({ title, comments, owner, image })
+
+    if(image != '') {
+        summary.image = image
+    }
     
     try {
-
-        //validar si existe La categoría
-        const recordExist = await paymentMethodModel.findOne({ name: NAME })
-        if( recordExist) {
-            return res.status(400).send({
-                msg: 'La categoría ya esta registrada.'
-            })
-        }
         
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
@@ -42,23 +39,23 @@ postData = async (req, res) => {
             return res.status(401).send({msg: 'Token no válido. *'})
         }
     
-        usuario = await userModel.findById(tokenData._id)
-        if(!usuario.status || usuario.deleted || !usuario) {
+        const user = await userModel.findById(tokenData._id)
+        if(!user.status || user.deleted || !user) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
 
             //id del usuario logueado
-            paymentMethod.creator = tokenData._id 
-            //console.log(category);
+            summary.creator = tokenData._id 
+            //console.log(product);
 
             //guardar en la BD
-            await paymentMethod.save()
+            await summary.save()
         }    
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            data: paymentMethod
+            data: summary
         });
         
     } catch (error) {   
@@ -73,14 +70,14 @@ postData = async (req, res) => {
 updateData = async (req, res) => {
     const { id } = req.params
     const { _id, ...resto } = req.body
-    resto.name = resto.name.toUpperCase()
 
     try {
        
         //guardar en la BD
-        const data = await paymentMethodModel.findByIdAndUpdate(id, resto, {
+        const data = await summaryModel.findByIdAndUpdate(id, resto, {
             new: true
-        })
+        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email'])
+        
         res.send({
            msg: `Se ha actualizado el registro`,
            data
@@ -102,7 +99,7 @@ deleteData = async (req, res) => {
 
     try {
         //guardar como eliminado en la BD
-        const data = await paymentMethodModel.findByIdAndUpdate(id, {
+        const data = await summaryModel.findByIdAndUpdate(id, {
             status: false,
             deleted: true
         }, { new: true })
@@ -119,4 +116,7 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+//TODO: Obtener datos de la tabla thematic_areas o topics
+
+
+module.exports = { getData, postData, updateData, deleteData, getPaymentMethods }
