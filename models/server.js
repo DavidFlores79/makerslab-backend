@@ -19,6 +19,8 @@ const modulePermissionRoleRoutes = require("../routes/module_permission_role.rou
 const paymentMethodRoutes = require("../routes/payment_methods.routes");
 const paymentRoutes = require("../routes/payments.routes");
 const summaryRoutes = require("../routes/summaries.routes");
+const summaryStatusRoutes = require("../routes/summary_statuses.routes");
+const occupationRoutes = require("../routes/occupations.routes");
 const fileUpload = require("express-fileupload");
 
 class Server {
@@ -83,6 +85,8 @@ class Server {
     this.app.use("/api/payment-methods", paymentMethodRoutes);
     this.app.use("/api/payments", paymentRoutes);
     this.app.use("/api/summaries", summaryRoutes);
+    this.app.use("/api/summary_statuses", summaryStatusRoutes);
+    this.app.use("/api/occupations", occupationRoutes);
   }
 
   listen() {

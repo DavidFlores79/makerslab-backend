@@ -10,6 +10,8 @@ const modulePermisionRoleModel = require('../models/module_permission_role.model
 const paymentMethodModel = require('../models/payment_method.model');
 const paymentModel = require('../models/payment.model');
 const summaryModel = require('../models/summary.model');
+const summaryStatusModel = require('../models/summary_estatus.model');
+const occupationModel = require('../models/occupation.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -292,6 +294,26 @@ const validateSummaryById = async ( id ) => {
 
 }
 
+/**Summaries Status*/
+const validateSummaryStatusById = async ( id ) => {
+
+    const dataExist = await summaryStatusModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
+/**Summaries Status*/
+const validateOccupationById = async ( id ) => {
+
+    const dataExist = await occupationModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
 module.exports = { 
     validateRole, 
     validateEmail, 
@@ -315,4 +337,6 @@ module.exports = {
     validatePaymentMethodById,
     validatePaymentById,
     validateSummaryById,
+    validateSummaryStatusById,
+    validateOccupationById,
 }
