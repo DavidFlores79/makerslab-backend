@@ -14,6 +14,7 @@ const summaryStatusModel = require('../models/summary_estatus.model');
 const occupationModel = require('../models/occupation.model');
 const eventParticipantModel = require('../models/event_participant.model');
 const eventParticipationModeModel = require('../models/event_participation_modes.model');
+const stateModel = require('../models/state.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -331,6 +332,14 @@ const validateEventParticipationModeById = async ( id ) => {
     }
 }
 
+/** Event Paticipant */
+const validateStateById = async ( id ) => {
+    const dataExist = await stateModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+}
+
 module.exports = { 
     validateRole, 
     validateEmail, 
@@ -358,4 +367,5 @@ module.exports = {
     validateOccupationById,
     validateEventParticipantById,
     validateEventParticipationModeById,
+    validateStateById,
 }

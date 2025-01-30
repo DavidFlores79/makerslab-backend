@@ -28,6 +28,14 @@ const EventParticipantSchema = Schema({
         ref: 'User',
         required: [true, 'El Usuario es obligatorio']
     },
+    status: {
+        type: Boolean,
+        default: true
+    },
+    deleted: {
+        type: Boolean,
+        default: false
+    },
 },
     {
         versionKey: false,

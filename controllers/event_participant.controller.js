@@ -22,9 +22,9 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { owner  } = req.body
-    const participant = new eventParticipantModel(req.body);  
-    
     try {
+
+        const participant = new eventParticipantModel(req.body)
         
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
@@ -64,11 +64,16 @@ postData = async (req, res) => {
                 user.event_participant = participant._id
                 await user.save()
             }
-        }    
+        }
+
+        // 2. Obtener el participante de la base de datos con populate  
+       const populatedPart = await eventParticipantModel.findById(participant._id)  
+       .populate('owner', ['name', 'email'])  
+       .populate('creator', ['name', 'email']);  
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            data: participant.populate('owner', ['name', 'email']).populate('creator', ['name', 'email'])
+            data: populatedPart
         });
         
     } catch (error) {   

@@ -23,6 +23,7 @@ const summaryStatusRoutes = require("../routes/summary_statuses.routes");
 const occupationRoutes = require("../routes/occupations.routes");
 const eventParticipantRoutes = require("../routes/event_participants.routes");
 const eventParticipationModeRoutes = require("../routes/event_participation_modes.routes");
+const stateRoutes = require("../routes/states.routes");
 const fileUpload = require("express-fileupload");
 
 class Server {
@@ -91,6 +92,7 @@ class Server {
     this.app.use("/api/occupations", occupationRoutes);
     this.app.use("/api/event-participants", eventParticipantRoutes);
     this.app.use("/api/event-participation-modes", eventParticipationModeRoutes);
+    this.app.use("/api/states", stateRoutes);
   }
 
   listen() {

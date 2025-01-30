@@ -1,9 +1,14 @@
 const {  Schema, model } = require('mongoose')
 
 const StateSchema = Schema({
+    code: {
+        type: String,
+        unique: [true, 'El código debe ser único'],
+        required: [true, 'El código es obligatorio']
+    },
     name: {
         type: String,
-        unique: [true, 'El nombre debe ser unico'],
+        unique: [true, 'El nombre debe ser único'],
         required: [true, 'El nombre es obligatorio']
     },
     status: {

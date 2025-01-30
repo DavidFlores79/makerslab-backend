@@ -1,12 +1,12 @@
 const { verifyToken } = require('../helpers/jwt.helper');
-const occupationModel = require('../models/occupation.model');
+const entityModel = require('../models/occupation.model');
 const userModel = require('../models/user.model');
 
 getData = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await occupationModel.find({ deleted: false, status: true })
+    const data = await entityModel.find({ deleted: false, status: true })
             .populate('creator', ['name', 'email'])
             .limit(limite)
             .skip(desde)
@@ -21,12 +21,12 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { name  } = req.body
-    const summaryStatus = new occupationModel({ name })
+    const newRecord = new entityModel({ name })
     
     try {
 
         //validar si existe el registro
-        const recordExist = await occupationModel.findOne({ name })
+        const recordExist = await entityModel.findOne({ name })
         if( recordExist) {
             return res.status(400).send({
                 msg: 'La registro está duplicado'
@@ -48,16 +48,16 @@ postData = async (req, res) => {
         } else {
 
             //id del usuario logueado
-            summaryStatus.creator = tokenData._id 
+            newRecord.creator = tokenData._id 
             //console.log(category);
 
             //guardar en la BD
-            await summaryStatus.save()
+            await newRecord.save()
         }    
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            data: summaryStatus
+            data: newRecord
         });
         
     } catch (error) {   
@@ -76,7 +76,7 @@ updateData = async (req, res) => {
     try {
        
         //guardar en la BD
-        const data = await occupationModel.findByIdAndUpdate(id, resto, {
+        const data = await entityModel.findByIdAndUpdate(id, resto, {
             new: true
         })
         res.send({
@@ -100,7 +100,7 @@ deleteData = async (req, res) => {
 
     try {
         //guardar como eliminado en la BD
-        const data = await occupationModel.findByIdAndUpdate(id, {
+        const data = await entityModel.findByIdAndUpdate(id, {
             status: false,
             deleted: true
         }, { new: true })
