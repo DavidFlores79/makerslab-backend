@@ -9,6 +9,9 @@ getData = async (req, res) => {
     const data = await eventParticipantModel.find({ deleted: false, status: true })
             .populate('owner', ['name', 'email'])
             .populate('creator', ['name', 'email'])
+            .populate('occupation', ['name'])
+            .populate('participation_mode', ['name'])
+            .populate('state', ['name'])
             .limit(limite)
             .skip(desde)
 
@@ -42,7 +45,7 @@ postData = async (req, res) => {
             
             //si se envia el owner se adjunta si no se le coloca el usuario logueado
             participant.creator = tokenData._id 
-            participant.owner = (owner != '') ? owner : tokenData._id 
+            participant.owner = (owner && owner != '') ? owner : tokenData._id 
 
             //validar si existe el registro
             const recordExist = await eventParticipantModel.findOne({ owner: participant.owner })
@@ -55,12 +58,18 @@ postData = async (req, res) => {
             //guardar en la BD
             await participant.save()
 
+            // return res.status(201).send({
+            //     msg: 'correctamente.',
+            //     data: user
+            // });
+
             //actualizar al usuario la informacion del registro creado
-            if (owner != '') {
+            if (owner && owner != '') {
                 const ownerData = await userModel.findById(owner)
-                ownerData.event_participant = ownerData._id
+                ownerData.event_participant = participant._id
                 ownerData.save()
             } else { 
+                
                 user.event_participant = participant._id
                 await user.save()
             }
@@ -69,7 +78,10 @@ postData = async (req, res) => {
         // 2. Obtener el participante de la base de datos con populate  
        const populatedPart = await eventParticipantModel.findById(participant._id)  
        .populate('owner', ['name', 'email'])  
-       .populate('creator', ['name', 'email']);  
+       .populate('creator', ['name', 'email'])
+       .populate('occupation', ['name'])
+       .populate('participation_mode', ['name'])
+       .populate('state', ['name'])
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',

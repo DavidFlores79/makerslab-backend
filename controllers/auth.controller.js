@@ -4,7 +4,9 @@ const { generarJWT } = require('../helpers/jwt.helper');
 const bcrypt = require('bcryptjs');
 const userModel = require("../models/user.model");
 const roleModel = require('../models/role.model');
+const eventParticipantModel = require('../models/event_participant.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper');
+const mongoose = require('mongoose'); // Importa mongoose  
 
 const login = async (req, res) => {
 
@@ -56,13 +58,17 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
 
-    const { name, email, password, image } = req.body
+    const { name, email, password, image, event_participation_data } = req.body
     let { role } = req.body;
     console.log('user role', role);
+
+    const session = await mongoose.startSession(); // Iniciar la sesión de transacción  
+    session.startTransaction(); // Iniciar la transacción 
 
     try {
         if(!role) {
             const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
+
             if (!userRole) {
                 // Si no se encuentra el rol, devuelve un mensaje de error
                 return res.status(404).send({ msg: 'No se encontró el rol para dar de alta al usuario' });
@@ -83,13 +89,35 @@ const register = async (req, res) => {
         data.password = bcrypt.hashSync(password, salt)
         
         //guardar en la BD
-        await data.save()
+        // await data.save()
+        await data.save({ session }); // Guarda el usuario dentro de la transacción
+
+        //Guardar informacion de la participacion Usuario
+        const participant = new eventParticipantModel(event_participation_data)
+        participant.creator = data._id 
+        participant.owner = data._id
+
+        //validar si existe el registro
+        const recordExist = await eventParticipantModel.findOne({ owner: data._id })
+        if( recordExist) {
+            return res.status(400).send({
+                msg: 'La registro está duplicado'
+            })
+        }
+        
+        //guardar en la BD
+        // await participant.save()
+        await participant.save({ session }); // Guarda el usuario dentro de la transacción
 
         //generar el JWT
         const jwt = await generarJWT(data)
         
         sendNotificationEmail('NUEVO USUARIO', 
         `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
+
+        // 3. Commit de la transacción (todas las operaciones fueron exitosas)  
+        await session.commitTransaction();  
+        session.endSession();
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
@@ -98,6 +126,9 @@ const register = async (req, res) => {
         });
         
     } catch (error) {   
+        // 4. Rollback de la transacción (si hubo algún error)  
+        await session.abortTransaction();  
+        session.endSession();
         console.log(error);
         res.status(500).send({
             msg: 'Error al guardar el registro',

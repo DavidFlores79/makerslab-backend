@@ -11,6 +11,7 @@ getData = async (req, res) => {
     const data = await userModel.find({ deleted: false })
             .limit(limite)
             .skip(desde)
+            .populate('event_participant')
             .populate('role');
     
     //filter SUPER_ROLE
