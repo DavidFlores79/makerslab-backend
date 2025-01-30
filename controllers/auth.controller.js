@@ -108,6 +108,10 @@ const registerEvent = async (req, res) => {
         //guardar en la BD
         // await participant.save()
         await participant.save({ session }); // Guarda el usuario dentro de la transacción
+        data.event_participant = participant._id
+        console.log({data})
+        
+        await data.save({ session }); // Guarda el usuario dentro de la transacción
 
         //generar el JWT
         const jwt = await generarJWT(data)
