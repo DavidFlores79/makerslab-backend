@@ -56,7 +56,7 @@ const login = async (req, res) => {
 
 }
 
-const register = async (req, res) => {
+const registerEvent = async (req, res) => {
 
     const { name, email, password, image, event_participation_data } = req.body
     let { role } = req.body;
@@ -137,6 +137,56 @@ const register = async (req, res) => {
     }
 }
 
+const register = async (req, res) => {
+
+    const { name, email, password, image } = req.body
+    let { role } = req.body;
+
+    try {
+        if(!role) {
+            const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
+            if (!userRole) {
+                // Si no se encuentra el rol, devuelve un mensaje de error
+                return res.status(404).send({ msg: 'No se encontró el rol para dar de alta al usuario' });
+            }
+
+            role = userRole._id; 
+        }
+    
+        const data = await new userModel({ name, email, password, role }).populate('role');
+    
+        if(image != '') {
+            data.image = image
+        }
+
+        //encriptar la contraseña
+        const salt = bcrypt.genSaltSync()
+        data.password = bcrypt.hashSync(password, salt)
+        
+        //guardar en la BD
+        await data.save()
+
+        //generar el JWT
+        const jwt = await generarJWT(data)
+        
+        sendNotificationEmail('NUEVO USUARIO', 
+        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
+
+        res.status(201).send({
+            msg: 'Registro creado correctamente.',
+            user: data,
+            jwt,
+        });
+        
+    } catch (error) {   
+        console.log(error);
+        res.status(500).send({
+            msg: 'Error al guardar el registro',
+            error
+        })
+    }
+}
+
 const googleSignIn = async(req, res) => {
 
 
@@ -202,4 +252,4 @@ const googleSignIn = async(req, res) => {
 
 }
 
-module.exports = { login, register, googleSignIn }
+module.exports = { login, register, googleSignIn, registerEvent }
