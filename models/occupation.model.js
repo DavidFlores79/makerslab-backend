@@ -25,9 +25,9 @@ const OccupationSchema = Schema({
     timestamps: true
 })
 
-SummaryStatusSchema.methods.toJSON = function () {
+OccupationSchema.methods.toJSON = function () {
     const { __v, deleted, ...data } = this.toObject()
     return data
 }
 
-module.exports = model( 'Occupation', SummaryStatusSchema )
+module.exports = model( 'Occupation', OccupationSchema )
