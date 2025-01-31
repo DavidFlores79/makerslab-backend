@@ -1,5 +1,4 @@
 
-```markdown
 # API para el Congreso Promoción Salud - Facultad de Enfermería UADY
 
 Este es el repositorio de la API backend para la plataforma de inscripción al Congreso Promoción Salud de la Facultad de Enfermería de la UADY.
@@ -36,7 +35,6 @@ Asegúrate de tener instalados:
    ```bash
    git clone https://github.com/DavidFlores79/congreso-backend.git
    cd congreso-backend
-   ```
 
 2. **Instalar Dependencias:**
    ```bash
@@ -75,7 +73,6 @@ Si deseas contribuir a este proyecto, por favor sigue los siguientes pasos:
 ## Licencia
 
 [Licencia: Privada]
-```
 
 **Recomendaciones Adicionales:**
 
