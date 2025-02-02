@@ -21,10 +21,9 @@ router.post('/',[
     check('password', 'El password debe contener más de 6 caracteres.').isLength({ min: 6 }),
     //Validacion personalizada que usa el modelo roles
     // check('role').custom( validateRole ),
-    check('role', 'No es un id válido.').isMongoId(),
-    check('role').custom( validateRoleById ),
+    check('role', 'No es un id válido.').optional().isMongoId(),
+    check('role').optional().custom( validateRoleById ),
     check('email').custom( validateEmail ),
-    
     Validator
 ], postData);
 router.put('/:id', [
@@ -46,5 +45,8 @@ router.delete('/:id', [
     check('id').custom( validateUserById ),
     Validator
 ], deleteData);
+
+//Version 2
+
 
 module.exports = router

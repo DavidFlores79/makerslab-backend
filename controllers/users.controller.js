@@ -5,23 +5,37 @@ const roleModel = require('../models/role.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 
 getData = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.page_size) || 10;
+        const skip = (page - 1) * pageSize;
 
-    const { limite = 0, desde= 0 } = req.query
+        // Query con filtros
+        const query = { 
+            deleted: false,
+            'role.name': { $ne: 'SUPER_ROLE' }
+        };
 
-    const data = await userModel.find({ deleted: false })
-            .limit(limite)
-            .skip(desde)
+        // Consulta para documentos
+        const data = await userModel.find(query)
+            .limit(pageSize)
+            .skip(skip)
             .populate('event_participant')
             .populate('role');
-    
-    //filter SUPER_ROLE
-    const users = data.filter( user => user.role.name != 'SUPER_ROLE' );
 
-    res.send({
-        total: users.length,
-        data: users
-    })
+        // Consulta para total de documentos
+        const totalItems = await userModel.countDocuments(query);
 
+        res.send({
+            page: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            data: data
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener registros' });
+    }
 }
 
 postData = async (req, res) => {
@@ -61,10 +75,7 @@ postData = async (req, res) => {
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al guardar el registro' });
     }
 }
 
@@ -92,10 +103,7 @@ updateData = async (req, res) => {
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al actualizar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al actualizar un registro' });
     }
 
 }
@@ -117,10 +125,7 @@ deleteData = async (req, res) => {
         });        
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al eliminar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al eliminar el registro' });
     }
 }
 
