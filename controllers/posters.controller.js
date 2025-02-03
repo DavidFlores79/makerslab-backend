@@ -5,20 +5,36 @@ const userModel = require('../models/user.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 
 getData = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.page_size) || 10;
+        const skip = (page - 1) * pageSize;
 
-    const { limite = 0, desde = 0 } = req.query
+        // Query con filtros
+        const query = { 
+            deleted: false,
+        };
 
-    const data = await posterModel.find({ deleted: false, status: true })
-        .populate('user_id', ['name', 'email'])
-        .populate('category')
-        .limit(limite)
-        .skip(desde)
+        // Consulta para documentos
+        const data = await posterModel.find(query)
+            .limit(pageSize)
+            .skip(skip)
+            .populate('user_id')
+            .populate('category');
 
-    res.send({
-        total: data.length,
-        data
-    })
+        // Consulta para total de documentos
+        const totalItems = await posterModel.countDocuments(query);
 
+        res.send({
+            page: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            data: data
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener registros' });
+    }
 }
 
 getHomePosters = async (req, res) => {

@@ -23,9 +23,9 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { description, comments, payment_method, amount, image, owner  } = req.body
+    const { _id, image, ...resto  } = req.body
     // let NAME = name.toUpperCase()
-    const payment = await new paymentModel({ description, comments, payment_method, amount, owner })
+    const payment = await new paymentModel({ ...resto })
 
     if(image != '') {
         payment.image = image
@@ -46,26 +46,27 @@ postData = async (req, res) => {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
-
             //id del usuario logueado
             payment.creator = tokenData._id 
             //console.log(product);
 
             //guardar en la BD
             await payment.save()
+
+            const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
+                new: true
+            }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method')
+
+            res.status(201).send({
+                msg: 'Registro creado correctamente.',
+                data: data
+            });
         }    
 
-        res.status(201).send({
-            msg: 'Registro creado correctamente.',
-            data: payment
-        });
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al guardar el registro', error: error.message });
     }
 }
 
@@ -87,10 +88,7 @@ updateData = async (req, res) => {
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al actualizar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al guardar el registro' });
     }
 
 }

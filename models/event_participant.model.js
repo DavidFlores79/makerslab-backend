@@ -3,7 +3,6 @@ const { Schema, model } = require('mongoose')
 const EventParticipantSchema = Schema({
     academic_degree_name: { type: String, required: true, },
     institution: { type: String, required: true, },
-    work_title: { type: String, required: true, },
     is_work_unpublished: { type: Boolean, required: true, },
     country: { type: String, required: true, },
     occupation: { type: Schema.Types.ObjectId, ref: 'Occupation', required: true, },

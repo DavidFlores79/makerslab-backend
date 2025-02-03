@@ -63,10 +63,7 @@ postData = async (req, res) => {
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+        res.status(500).send({ msg: 'Error al guardar el registro', error: error.message });
     }
 }
 

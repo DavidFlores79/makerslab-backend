@@ -29,7 +29,7 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
-    checkPermissions(['ELIMINAR']),
+    // checkPermissions(['ELIMINAR']),
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),

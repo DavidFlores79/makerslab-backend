@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
 const { getData, postData, updateData, deleteData } = require('../controllers/payment_method.controller');
-const { existPaymentMethodName, validatePaymentMthodById } = require('../helpers/db_validators.helper');
+const { existPaymentMethodName, validatePaymentMethodById, validatePaymentById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
@@ -15,14 +15,15 @@ router.post('/',[
     checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
-    check('status', 'El status debe ser de tipo Boolean.').isBoolean(),
-    check('name').custom( existPaymentMethodName ),
+    check('status', 'El status debe ser de tipo Boolean.').optional().isBoolean(),
+    check('payment_method', 'No es un id válido.').isMongoId(),
+    check('payment_method').custom( validatePaymentMethodById ),
     Validator
 ], postData);
 router.put('/:id', [
     checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
-    check('id').custom( validatePaymentMthodById ),
+    check('id').custom( validatePaymentMethodById ),
     check('name').custom( existPaymentMethodName ),
     Validator
 ], updateData);
@@ -32,7 +33,7 @@ router.delete('/:id', [
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
-    check('id').custom( validatePaymentMthodById ),
+    check('id').custom( validatePaymentById ),
     Validator
 ], deleteData);
 
