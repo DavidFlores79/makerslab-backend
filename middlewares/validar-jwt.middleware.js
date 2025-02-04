@@ -23,16 +23,31 @@ const validarJWT = async (req, res, next) => {
         } else {
             next()
         }
-
-
     } catch (error) {
-
         res.status(401).send({ msg: 'Usuario no autorizado' })
-        
     }
-
-
 }
 
+function verifyGuestToken(req, res, next) {
+    // Extrae el token desde la cabecera 'x-token'
+    const token = req.headers['x-token'];
+    
+    if (!token) {
+      return res.status(401).json({ message: 'No se proporcionó token en la cabecera x-token' });
+    }
+    //imprime el token
+    console.log('Guest Token: ', token);
+  
+    try {
+      // Verifica el token usando la llave secreta del guest
+    //   const decoded = jwt.verify(token, GUEST_SECRET);
+      // Si la verificación es exitosa, asigna la información decodificada a req.user (o req.guest)
+    //   req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Token inválido o expirado' });
+    }
+  }
 
-module.exports = { validarJWT }
+
+module.exports = { validarJWT, verifyGuestToken }

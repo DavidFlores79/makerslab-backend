@@ -4,6 +4,7 @@ const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
 require('dotenv').config()
 
+const catalogsRoutes = require("../routes/catalogs.routes");
 const usersRoutes = require("../routes/users.routes");
 const rolesRoutes = require("../routes/roles.routes");
 const categoriesRoutes = require("../routes/categories.routes");
@@ -93,6 +94,9 @@ class Server {
     this.app.use("/api/event-participants", eventParticipantRoutes);
     this.app.use("/api/event-participation-modes", eventParticipationModeRoutes);
     this.app.use("/api/states", stateRoutes);
+
+    // catalogos
+    this.app.use("/api/catalogs", catalogsRoutes);
   }
 
   listen() {
