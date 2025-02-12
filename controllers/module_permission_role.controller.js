@@ -93,6 +93,40 @@ getMenuByRole = async (req, res) => {
 
 }
 
+getMenu = async (req, res) => {
+
+    const { limite = 0, desde = 0 } = req.query
+    try {        
+        const viewPermission = await permissionModel.findOne({ name: 'VISUALIZAR' });
+        const data = await modulePermisionRoleModel.find({
+            role: req.user.role._id, permissions: {
+                $in: [
+                    viewPermission._id
+                ]
+            }
+        })
+        .limit(limite)
+        .skip(desde)
+        .populate('module')
+        // .populate('permissions')
+        .sort({ module: 1 })
+
+        const modules = [...new Set(data.map(element => element.module))];
+    
+        res.send({
+            data: modules,
+        })
+        
+    } catch (error) {   
+        console.log(error);
+        res.status(500).send({
+            msg: 'Error al acceder al menú',
+            error
+        })
+    }
+
+}
+
 getUserMenu = async ( role ) => {
 
     // const { limite = 0, desde = 0 } = req.query
@@ -225,4 +259,4 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData, getProfile, getProfileByRole, getMenuByRole, getUserMenu }
+module.exports = { getData, postData, updateData, deleteData, getProfile, getProfileByRole, getMenu, getMenuByRole, getUserMenu }

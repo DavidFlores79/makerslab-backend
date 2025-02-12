@@ -21,6 +21,7 @@ const validarJWT = async (req, res, next) => {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
+            req.user = usuario
             next()
         }
     } catch (error) {

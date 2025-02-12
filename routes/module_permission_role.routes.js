@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check, body } = require('express-validator')
-const { getData, postData, updateData, deleteData, getProfile, getProfileByRole, getMenuByRole } = require('../controllers/module_permission_role.controller');
+const { getData, postData, updateData, deleteData, getProfile, getProfileByRole, getMenuByRole, getMenu } = require('../controllers/module_permission_role.controller');
 const { validateModuleById, validateRoleById, existProfile, validateProfileById, validatePermissionById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
@@ -8,17 +8,24 @@ const { Validator } = require('../middlewares/validator.middleware');
 const router = Router()
 
 router.get('/', getData);
+
+router.get('/menu', [
+    validarJWT,
+], getMenu);
+
 router.get('/:role_id', [
     check('role_id', 'No es un id válido.').isMongoId(),
     check('role_id').custom( validateRoleById ),
     Validator
 ], getProfileByRole);
+
 router.get('/:role_id/menu', [
     validarJWT,
     check('role_id', 'No es un id válido.').isMongoId(),
     check('role_id').custom( validateRoleById ),
     Validator
 ], getMenuByRole);
+
 router.get('/:role_id/:module_id', [
     check('role_id', 'No es un id válido.').isMongoId(),
     check('module_id', 'No es un id válido.').isMongoId(),
