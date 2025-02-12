@@ -17,7 +17,7 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
         // console.log('mi ruta', route);
 
         if(!tokenData) {
-            return res.status(401).send({msg: 'Token no válido. **'}) //Si el token no es valido debera ser redirigido a Home
+            return res.status(401).send({msg: 'Su sesión ha caducado'}) //Si el token no es valido debera ser redirigido a Home
         }
         const userData = await userModel.findById(tokenData._id);
 

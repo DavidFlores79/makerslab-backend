@@ -14,6 +14,7 @@ router.get('/:role_id', [
     Validator
 ], getProfileByRole);
 router.get('/:role_id/menu', [
+    validarJWT,
     check('role_id', 'No es un id válido.').isMongoId(),
     check('role_id').custom( validateRoleById ),
     Validator
