@@ -38,7 +38,7 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
             next();
         } else {
             console.log(`Perfil ${userData.role} no autorizado para la ruta ${req.baseUrl}`);
-            return res.status(401).send({msg: `${permissions} - Perfil de Usuario No Autorizado.`})
+            return res.status(403).send({msg: `${permissions} - Perfil de Usuario No Autorizado.`})
         }
 
     } catch (error) {

@@ -14,7 +14,13 @@ const login = async (req, res) => {
 
     try {
 
-        const user = await userModel.findOne({ email }).populate('role')
+        const user = await userModel.findOne({ email }).populate('role').populate('event_participant').populate({
+            path: "event_participant",
+            populate: {
+              path: "participation_mode",
+              select: "name" // Solo trae el campo 'name'
+            }
+          })
 
         if(!user) {
             return res.status(400).send({

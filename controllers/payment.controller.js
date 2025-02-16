@@ -2,23 +2,49 @@ const { verifyToken } = require('../helpers/jwt.helper')
 const paymentMethodModel = require('../models/payment_method.model')
 const paymentModel = require('../models/payment.model')
 const userModel = require('../models/user.model')
+const { USER_ROLE } = require('../config/constants')
 
 getData = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.page_size) || 10;
+        const skip = (page - 1) * pageSize;
 
-    const { limite = 0, desde= 0 } = req.query
+        //extraer usuario logueado del token
+        const token = req.headers.authorization.split(' ').pop()
+        const user = await verifyToken(token)
 
-    const data = await paymentModel.find({ deleted: false, status: true })
-            .populate('creator', ['name', 'email'])
-            .populate('owner', ['name', 'email'])
-            .populate('payment_method')
-            .limit(limite)
-            .skip(desde)
+        if(!user) {
+            return res.status(401).send({msg: 'Token no válido. *'})
+        }
 
-    res.send({
-        total: data.length,
-        data
-    })
+        // Query con filtros
+        const query = { deleted: false };
+        if(user.role.name == USER_ROLE) {
+            query.owner = user._id
+        }
 
+        // Consulta para documentos
+        const data = await paymentModel.find(query)
+            .limit(pageSize)
+            .skip(skip)
+            .populate('owner')
+            .populate('creator')
+            .populate('payment_method');
+
+        // Consulta para total de documentos
+        const totalItems = await paymentModel.countDocuments(query);
+
+        res.send({
+            page: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            data: data
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener registros' });
+    }
 }
 
 postData = async (req, res) => {

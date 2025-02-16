@@ -13,6 +13,10 @@ const ModuleSchema = Schema({
         type: String,
         required: [true, 'La ruta es obligatoria'],
     },
+    priority: {
+        type: Number,
+        default: 0
+    },
     image: {
         type: String,
         default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
