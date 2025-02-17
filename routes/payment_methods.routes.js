@@ -16,8 +16,6 @@ router.post('/',[
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('status', 'El status debe ser de tipo Boolean.').optional().isBoolean(),
-    check('payment_method', 'No es un id válido.').isMongoId(),
-    check('payment_method').custom( validatePaymentMethodById ),
     Validator
 ], postData);
 router.put('/:id', [
@@ -33,7 +31,7 @@ router.delete('/:id', [
     validarJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
-    check('id').custom( validatePaymentById ),
+    check('id').custom( validatePaymentMethodById ),
     Validator
 ], deleteData);
 
