@@ -19,6 +19,35 @@ getData = async (req, res) => {
 
 }
 
+const getDataById = async (req, res) => {
+
+    const { id } = req.params
+
+    try {
+        //validar si existe el registro
+        const data = await categoryModel.findOne({ deleted: false, _id: id })
+            .populate('user_id', ['name', 'email'])
+
+            if (!data) {
+            return res.status(404).send({
+                msg: `Registro no encontrado.`,
+            });
+        }
+
+        return res.send({
+            msg: `Registro encontrado`,
+            data: data
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            msg: 'Error al leer el registro',
+            error
+        })
+    }
+
+}
+
 postData = async (req, res) => {
 
     const { name  } = req.body
@@ -120,4 +149,4 @@ deleteData = async (req, res) => {
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+module.exports = { getData, getDataById, postData, updateData, deleteData }

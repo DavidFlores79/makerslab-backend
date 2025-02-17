@@ -11,7 +11,7 @@ getData = async (req, res) => {
         const skip = (page - 1) * pageSize;
 
         // Query con filtros
-        const query = { 
+        const query = {
             deleted: false,
         };
 
@@ -31,7 +31,7 @@ getData = async (req, res) => {
             totalItems: totalItems,
             data: data
         });
-        
+
     } catch (error) {
         res.status(500).send({ msg: 'Error al obtener registros' });
     }
@@ -69,6 +69,36 @@ getHomePostersByCategory = async (req, res) => {
         total: data.length,
         data
     })
+
+}
+
+const getPosterById = async (req, res) => {
+
+    const { id } = req.params
+
+    try {
+        //validar si existe el registro
+        const poster = await posterModel.findOne({ deleted: false, _id: id })
+            .populate('user_id', ['name', 'email'])
+            .populate('category')
+
+        if (!poster) {
+            return res.status(404).send({
+                msg: `Poster no encontrado.`,
+            });
+        }
+
+        return res.send({
+            msg: `Poster encontrado. Código: ${poster.code}.`,
+            data: poster
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            msg: 'Error al leer el registro',
+            error
+        })
+    }
 
 }
 
@@ -165,7 +195,7 @@ postData = async (req, res) => {
 
             //guardar en la BD
             await dato.save();
-            
+
             sendNotificationEmail('NUEVO CARTEL',
                 `${usuario.name} ha creado el nuevo Cartel ${dato.name}.`);
 
@@ -276,4 +306,4 @@ getCategories = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData, getCategories, getMyPoster, getHomePosters, getHomePostersByCategory }
+module.exports = { getData, postData, updateData, deleteData, getCategories, getMyPoster, getHomePosters, getHomePostersByCategory, getPosterById }
