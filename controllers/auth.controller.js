@@ -129,9 +129,17 @@ const registerEvent = async (req, res) => {
         await session.commitTransaction();  
         session.endSession();
 
+        const newUser = await userModel.findOne(data._id).populate('role').populate('event_participant').populate({
+            path: "event_participant",
+            populate: {
+                path: "participation_mode",
+                select: "name" // Solo trae el campo 'name'
+            }
+        });
+
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            user: data,
+            user: newUser,
             jwt,
         });
         
