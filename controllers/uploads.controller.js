@@ -6,6 +6,7 @@ const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
+const summaryModel = require('../models/summary.model');
 const { options } = require('../routes/posters.routes');
 
 // Configuration 
@@ -176,6 +177,13 @@ const uploadImageCloudinary = async (req, res) => {
       }
       // console.log(product);
       break;
+    case 'summaries':
+      modelo = await summaryModel.findById(id)
+      if (!modelo) {
+        return res.status(404).send({ msg: `El resumen con id: ${id} no existe en la BD.` })
+      }
+      // console.log(product);
+      break;
     default:
       return res.status(500).send({ msg: 'Esta colección no está permitida para carga de archivos.' })
   }
@@ -232,13 +240,13 @@ const uploadCloudinary = async (req, res) => {
   try {
 
     if(size > 2097152 && mimetype == 'audio/mpeg') {
-      return res.status(404).send({
+      return res.status(400).send({
         msg: `Archivo de audio máximo 2MB.`,
       })
     }
 
     if(size > 5242880 && mimetype == 'application/pdf') {
-      return res.status(404).send({
+      return res.status(400).send({
         msg: `Archivo PDF máximo 5MB.`,
       })
     }
@@ -266,7 +274,7 @@ const uploadCloudinary = async (req, res) => {
     const { secure_url, public_id } = await cloudinary.uploader.upload(tempFilePath, options)
 
     return res.status(201).send({
-      msg: `Imagen cargada ó actualizada.`,
+      msg: `Archivo cargado ó actualizado`,
       data: secure_url
     })
 

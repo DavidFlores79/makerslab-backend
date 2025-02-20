@@ -13,7 +13,7 @@ const validarJWT = async (req, res, next) => {
         const tokenData = await verifyToken(token)
 
         if(!tokenData) {
-            return res.status(401).send({ msg: 'Token no válido. ***' })
+            return res.status(401).send({ msg: 'Su sesión ha caducado 😫**' })
         }
 
         usuario = await userModel.findById(tokenData._id)

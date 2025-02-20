@@ -4,7 +4,7 @@ const { uploadImage, uploadFile, showImage, uploadImageCloudinary, uploadCloudin
 const { coleccionesPermitidas, validateUserById } = require('../helpers/db_validators.helper');
 
 const { Validator } = require('../middlewares/validator.middleware');
-const collections = ['users', 'products', 'modules', 'permissions', 'posters'];
+const collections = ['users', 'products', 'modules', 'permissions', 'posters', 'summaries'];
 
 const router = Router()
 

@@ -15,7 +15,7 @@ getData = async (req, res) => {
         const user = await verifyToken(token)
 
         if(!user) {
-            return res.status(401).send({msg: 'Token no válido. *'})
+            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
 
         // Query con filtros
@@ -64,7 +64,7 @@ postData = async (req, res) => {
         const tokenData = await verifyToken(token)
 
         if(!tokenData) {
-            return res.status(401).send({msg: 'Token no válido. *'})
+            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
     
         const user = await userModel.findById(tokenData._id)
