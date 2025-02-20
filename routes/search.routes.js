@@ -1,10 +1,11 @@
 const { Router } = require('express');
-const { searchData, searchError } = require('../controllers/search.controller')
+const { searchData, searchError, searchCollection } = require('../controllers/search.controller')
 
 const router = Router();
 
 router.get('/', searchError)
 router.get('/:coleccion', searchError)
 router.get('/:coleccion/:termino', searchData)
+router.post('/:coleccion', searchCollection)
 
 module.exports = router;
