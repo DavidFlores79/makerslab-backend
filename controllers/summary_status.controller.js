@@ -1,5 +1,5 @@
 const { verifyToken } = require('../helpers/jwt.helper');
-const summaryStatusModel = require('../models/summary_estatus.model');
+const summaryStatusModel = require('../models/summary_status.model');
 const userModel = require('../models/user.model');
 
 getData = async (req, res) => {

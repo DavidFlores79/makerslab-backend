@@ -90,7 +90,7 @@ class Server {
     this.app.use("/api/payment-methods", paymentMethodRoutes);
     this.app.use("/api/payments", paymentRoutes);
     this.app.use("/api/summaries", summaryRoutes);
-    this.app.use("/api/summary_statuses", summaryStatusRoutes);
+    this.app.use("/api/summary-statuses", summaryStatusRoutes);
     this.app.use("/api/occupations", occupationRoutes);
     this.app.use("/api/event-participants", eventParticipantRoutes);
     this.app.use("/api/event-participation-modes", eventParticipationModeRoutes);

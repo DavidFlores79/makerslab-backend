@@ -1,6 +1,7 @@
 const { USER_ROLE } = require('../config/constants');
 const { verifyToken } = require('../helpers/jwt.helper')
 const summaryModel = require('../models/summary.model')
+const summaryStatusModel = require('../models/summary_status.model')
 const userModel = require('../models/user.model')
 
 getData = async (req, res) => {
@@ -27,8 +28,9 @@ getData = async (req, res) => {
         const data = await summaryModel.find(query)
             .limit(pageSize)
             .skip(skip)
-            .populate('owner')
-            .populate('creator');
+            .populate('document_status')
+            .populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email']);
 
         // Consulta para total de documentos
         const totalItems = await summaryModel.countDocuments(query);
@@ -70,6 +72,10 @@ postData = async (req, res) => {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
+
+            const sumaryStatuses = await summaryStatusModel.find({ status: true })
+            const initialSummaryStatus = sumaryStatuses[0]
+            summary.document_status = initialSummaryStatus._id
 
             //id del usuario logueado
             summary.creator = tokenData._id

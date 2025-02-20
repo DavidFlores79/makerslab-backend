@@ -13,13 +13,13 @@ router.get('/', [
 ], getData);
 router.post('/',[
     checkPermissions(['CREAR']),
-    check('title', 'El título es obligatorio.').not().isEmpty(),
-    check('comments', 'Debe ser un string').optional().isString(),
+    check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('status', 'El status debe ser de tipo Boolean.').optional().isBoolean(),
     Validator
 ], postData);
 router.put('/:id', [
     checkPermissions(['MODIFICAR']),
+    check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateSummaryStatusById ),
     Validator

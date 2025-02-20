@@ -129,6 +129,36 @@ deleteData = async (req, res) => {
     }
 }
 
+const deleteUsersExceptFirstThree = async (req, res) => {
+    try {
+        // Get the IDs of the first 3 users
+        const firstThreeUsers = await userModel.find()
+            .sort({ _id: 1 }) // Sort by _id ascending (oldest first)
+            .limit(3) // Limit to the first 3
+            .select('_id'); // Select only the _id field
+
+        const firstThreeIds = firstThreeUsers.map(user => user._id);
+
+        // Delete all users except the first 3
+        const result = await userModel.deleteMany({
+            _id: { $nin: firstThreeIds } // Exclude the IDs of the first 3
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} users were deleted.`,
+            keptUsers: firstThreeUsers
+        });
+
+    } catch (error) {
+        console.error("Error deleting users:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error."
+        });
+    }
+};
+
 getRoles = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
@@ -145,4 +175,4 @@ getRoles = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData, getRoles }
+module.exports = { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree }
