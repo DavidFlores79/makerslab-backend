@@ -21,6 +21,7 @@ const paymentMethodRoutes = require("../routes/payment_methods.routes");
 const paymentRoutes = require("../routes/payments.routes");
 const summaryRoutes = require("../routes/summaries.routes");
 const summaryStatusRoutes = require("../routes/summary_statuses.routes");
+const paymentStatusRoutes = require("../routes/payment_statuses.routes");
 const occupationRoutes = require("../routes/occupations.routes");
 const eventParticipantRoutes = require("../routes/event_participants.routes");
 const eventParticipationModeRoutes = require("../routes/event_participation_modes.routes");
@@ -89,6 +90,7 @@ class Server {
     this.app.use("/api/upload", uploadRoutes);
     this.app.use("/api/payment-methods", paymentMethodRoutes);
     this.app.use("/api/payments", paymentRoutes);
+    this.app.use("/api/payment-statuses", paymentStatusRoutes);
     this.app.use("/api/summaries", summaryRoutes);
     this.app.use("/api/summary-statuses", summaryStatusRoutes);
     this.app.use("/api/occupations", occupationRoutes);

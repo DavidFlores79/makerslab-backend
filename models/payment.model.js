@@ -21,6 +21,11 @@ const PaymentSchema = Schema({
         ref: 'PaymentMethod',
         required: [true, 'El método de pago es obligatorio']
     },
+    payment_status: {
+        type: Schema.Types.ObjectId,
+        ref: 'PaymentStatus',
+        required: [true, 'El status de pago es obligatorio']
+    },
     owner: {
         type: Schema.Types.ObjectId,
         ref: 'User',

@@ -1,8 +1,9 @@
 const { verifyToken } = require('../helpers/jwt.helper')
 const paymentMethodModel = require('../models/payment_method.model')
+const paymentStatusModel = require('../models/payment_status.model')
 const paymentModel = require('../models/payment.model')
 const userModel = require('../models/user.model')
-const { USER_ROLE } = require('../config/constants')
+const { USER_ROLE, PENDING_PAYMENT } = require('../config/constants')
 
 getData = async (req, res) => {
     try {
@@ -14,13 +15,13 @@ getData = async (req, res) => {
         const token = req.headers.authorization.split(' ').pop()
         const user = await verifyToken(token)
 
-        if(!user) {
-            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
+        if (!user) {
+            return res.status(401).send({ msg: 'Su sesión ha caducado 😫' })
         }
 
         // Query con filtros
         const query = { deleted: false };
-        if(user.role.name == USER_ROLE) {
+        if (user.role.name == USER_ROLE) {
             query.owner = user._id
         }
 
@@ -30,7 +31,8 @@ getData = async (req, res) => {
             .skip(skip)
             .populate('owner')
             .populate('creator')
-            .populate('payment_method');
+            .populate('payment_method')
+            .populate('payment_status');
 
         // Consulta para total de documentos
         const totalItems = await paymentModel.countDocuments(query);
@@ -41,7 +43,7 @@ getData = async (req, res) => {
             totalItems: totalItems,
             data: data
         });
-        
+
     } catch (error) {
         res.status(500).send({ msg: 'Error al obtener registros' });
     }
@@ -49,48 +51,61 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { _id, image, ...resto  } = req.body
+    const { _id, image, ...resto } = req.body
     // let NAME = name.toUpperCase()
     const payment = await new paymentModel({ ...resto })
 
-    if(image != '') {
+    if (image != '') {
         payment.image = image
     }
-    
+
     try {
-        
+
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
         const tokenData = await verifyToken(token)
 
-        if(!tokenData) {
-            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
+        if (!tokenData) {
+            return res.status(401).send({ msg: 'Su sesión ha caducado 😫' })
         }
-    
+
         const user = await userModel.findById(tokenData._id)
-        if(!user.status || user.deleted || !user) {
+        if (!user.status || user.deleted || !user) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
+
+            const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
+            if(!paymentStatus) {
+                return res.status(400).send({ msg: 'Estatus inicial no definido' });
+            }
+
             //id del usuario logueado
-            payment.creator = tokenData._id 
+            payment.creator = tokenData._id
             //console.log(product);
+            if (tokenData.role.name == USER_ROLE) {
+                payment.owner = tokenData._id
+                payment.payment_status = paymentStatus._id
+            }
 
             //guardar en la BD
             await payment.save()
 
             const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
                 new: true
-            }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method')
+            }).populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
+            .populate('payment_method')
+            .populate('payment_status')
 
             res.status(201).send({
                 msg: 'Registro creado correctamente.',
                 data: data
             });
-        }    
+        }
 
-        
-    } catch (error) {   
+
+    } catch (error) {
         console.log(error);
         res.status(500).send({ msg: 'Error al guardar el registro', error: error.message });
     }
@@ -101,18 +116,18 @@ updateData = async (req, res) => {
     const { _id, ...resto } = req.body
 
     try {
-       
+
         //guardar en la BD
         const data = await paymentModel.findByIdAndUpdate(id, resto, {
             new: true
-        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method')
-        
+        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method').populate('payment_status')
+
         res.send({
-           msg: `Se ha actualizado el registro`,
-           data
+            msg: `Se ha actualizado el registro`,
+            data
         });
-        
-    } catch (error) {   
+
+    } catch (error) {
         console.log(error);
         res.status(500).send({ msg: 'Error al guardar el registro' });
     }
@@ -120,7 +135,7 @@ updateData = async (req, res) => {
 }
 
 deleteData = async (req, res) => {
-    
+
     const { id } = req.params
 
     try {
@@ -130,10 +145,10 @@ deleteData = async (req, res) => {
             deleted: true
         }, { new: true })
         res.send({
-           msg: `Se ha eliminado el registro.`,
-           data
-        });        
-    } catch (error) {   
+            msg: `Se ha eliminado el registro.`,
+            data
+        });
+    } catch (error) {
         console.log(error);
         res.status(500).send({
             msg: 'Error al eliminar el registro',
@@ -144,12 +159,12 @@ deleteData = async (req, res) => {
 
 getPaymentMethods = async (req, res) => {
 
-    const { limite = 0, desde= 0 } = req.query
+    const { limite = 0, desde = 0 } = req.query
 
     const data = await paymentMethodModel.find({ deleted: false, status: true })
-            .populate('creator', ['name', 'email'])
-            .limit(limite)
-            .skip(desde)
+        .populate('creator', ['name', 'email'])
+        .limit(limite)
+        .skip(desde)
 
     res.send({
         total: data.length,

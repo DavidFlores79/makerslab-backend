@@ -307,6 +307,16 @@ const validateSummaryStatusById = async ( id ) => {
 
 }
 
+/**Payment Status*/
+const validatePaymentStatusById = async ( id ) => {
+
+    const dataExist = await paymentStatusModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
 /**Summaries Status*/
 const validateOccupationById = async ( id ) => {
 
@@ -368,4 +378,5 @@ module.exports = {
     validateEventParticipantById,
     validateEventParticipationModeById,
     validateStateById,
+    validatePaymentStatusById
 }
