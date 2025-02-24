@@ -1,6 +1,7 @@
 const { USER_ROLE } = require('../config/constants');
 const { verifyToken } = require('../helpers/jwt.helper')
 const summaryModel = require('../models/summary.model')
+const summaryStatusModel = require('../models/summary_status.model')
 const userModel = require('../models/user.model')
 
 getData = async (req, res) => {
@@ -14,7 +15,7 @@ getData = async (req, res) => {
         const user = await verifyToken(token)
 
         if(!user) {
-            return res.status(401).send({msg: 'Token no válido. *'})
+            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
 
         // Query con filtros
@@ -27,8 +28,9 @@ getData = async (req, res) => {
         const data = await summaryModel.find(query)
             .limit(pageSize)
             .skip(skip)
-            .populate('owner')
-            .populate('creator');
+            .populate('document_status')
+            .populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email']);
 
         // Consulta para total de documentos
         const totalItems = await summaryModel.countDocuments(query);
@@ -47,13 +49,16 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { title, comments, owner, image  } = req.body
+    const { title, comments, owner, document  } = req.body
     // let NAME = name.toUpperCase()
-    const summary = await new summaryModel({ title, comments, owner, image })
 
-    if(image != '') {
-        summary.image = image
+    console.log( req.body );
+    
+    
+    if(!document || document == '') {
+        return res.status(400).send({msg: 'El documento no se ha cargado correctamente.'})
     }
+    const summary = await new summaryModel({ title, comments, document, owner })
     
     try {
         
@@ -62,7 +67,7 @@ postData = async (req, res) => {
         const tokenData = await verifyToken(token)
 
         if(!tokenData) {
-            return res.status(401).send({msg: 'Token no válido. *'})
+            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
     
         const user = await userModel.findById(tokenData._id)
@@ -70,6 +75,10 @@ postData = async (req, res) => {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
+
+            const sumaryStatuses = await summaryStatusModel.find({ status: true })
+            const initialSummaryStatus = sumaryStatuses[0]
+            summary.document_status = initialSummaryStatus._id
 
             //id del usuario logueado
             summary.creator = tokenData._id
@@ -80,13 +89,18 @@ postData = async (req, res) => {
 
             //guardar en la BD
             await summary.save()
-        }    
 
-        res.status(201).send({
-            msg: 'Registro creado correctamente.',
-            data: summary
-        });
-        
+            //consultar nuevamente para obtener el registro con los datos de las tablas relacionadas
+            const data = await summaryModel.findById(summary._id)
+                    .populate('owner', ['name', 'email'])
+                    .populate('creator', ['name', 'email'])
+                    .populate('document_status')
+
+            res.status(201).send({
+                msg: 'Registro creado correctamente.',
+                data
+            });
+        }
     } catch (error) {   
         console.log(error);
         res.status(500).send({

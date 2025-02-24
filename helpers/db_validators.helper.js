@@ -10,7 +10,7 @@ const modulePermisionRoleModel = require('../models/module_permission_role.model
 const paymentMethodModel = require('../models/payment_method.model');
 const paymentModel = require('../models/payment.model');
 const summaryModel = require('../models/summary.model');
-const summaryStatusModel = require('../models/summary_estatus.model');
+const summaryStatusModel = require('../models/summary_status.model');
 const occupationModel = require('../models/occupation.model');
 const eventParticipantModel = require('../models/event_participant.model');
 const eventParticipationModeModel = require('../models/event_participation_modes.model');
@@ -307,6 +307,16 @@ const validateSummaryStatusById = async ( id ) => {
 
 }
 
+/**Payment Status*/
+const validatePaymentStatusById = async ( id ) => {
+
+    const dataExist = await paymentStatusModel.findById(id)
+    if(!dataExist) {
+        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
+    }
+
+}
+
 /**Summaries Status*/
 const validateOccupationById = async ( id ) => {
 
@@ -368,4 +378,5 @@ module.exports = {
     validateEventParticipantById,
     validateEventParticipationModeById,
     validateStateById,
+    validatePaymentStatusById
 }

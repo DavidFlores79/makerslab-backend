@@ -18,7 +18,7 @@ const SummaryStatusSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'El Usuario es obligatorio']
-    }
+    },
 },
 {
     versionKey: false,

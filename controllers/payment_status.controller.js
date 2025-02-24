@@ -1,15 +1,13 @@
-const { verifyToken } = require('../helpers/jwt.helper')
-const categoryModel = require('../models/category.model')
-const productModel = require('../models/product.model')
-const userModel = require('../models/user.model')
+const { verifyToken } = require('../helpers/jwt.helper');
+const paymentStatusModel = require('../models/payment_status.model');
+const userModel = require('../models/user.model');
 
 getData = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await productModel.find({ deleted: false })
-            .populate('user_id', ['name', 'email'])
-            .populate('category')
+    const data = await paymentStatusModel.find({ deleted: false, status: true })
+            .populate('creator', ['name', 'email'])
             .limit(limite)
             .skip(desde)
 
@@ -22,21 +20,16 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, category, status, available, price, image  } = req.body
-    let NAME = name.toUpperCase()
-    const product = await new productModel({ name: NAME, category: category._id, status: status, price, available }).populate('category')
-
-    if(image != '') {
-        product.image = image
-    }
+    const { name  } = req.body
+    const paymentStatus = await new paymentStatusModel({ name })
     
     try {
 
         //validar si existe el registro
-        const productExist = await productModel.findOne({ name: NAME })
-        if( productExist) {
+        const recordExist = await paymentStatusModel.findOne({ name })
+        if( recordExist) {
             return res.status(400).send({
-                msg: 'El nombre ya esta registrado.'
+                msg: 'La registro está duplicado'
             })
         }
         
@@ -48,23 +41,23 @@ postData = async (req, res) => {
             return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
     
-        usuario = await userModel.findById(tokenData._id)
-        if(!usuario.status || usuario.deleted || !usuario) {
+        const user = await userModel.findById(tokenData._id)
+        if(!user.status || user.deleted || !user) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
 
             //id del usuario logueado
-            product.user_id = tokenData._id 
-            //console.log(product);
+            paymentStatus.creator = tokenData._id 
+            //console.log(category);
 
             //guardar en la BD
-            await product.save()
+            await paymentStatus.save()
         }    
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
-            data: product
+            data: paymentStatus
         });
         
     } catch (error) {   
@@ -83,10 +76,9 @@ updateData = async (req, res) => {
     try {
        
         //guardar en la BD
-        const data = await productModel.findByIdAndUpdate(id, resto, {
+        const data = await paymentStatusModel.findByIdAndUpdate(id, resto, {
             new: true
-        }).populate('category').populate('user_id', ['name', 'email'])
-        
+        })
         res.send({
            msg: `Se ha actualizado el registro`,
            data
@@ -108,7 +100,7 @@ deleteData = async (req, res) => {
 
     try {
         //guardar como eliminado en la BD
-        const data = await productModel.findByIdAndUpdate(id, {
+        const data = await paymentStatusModel.findByIdAndUpdate(id, {
             status: false,
             deleted: true
         }, { new: true })
@@ -125,20 +117,4 @@ deleteData = async (req, res) => {
     }
 }
 
-getCategories = async (req, res) => {
-
-    const { limite = 0, desde= 0 } = req.query
-
-    const data = await categoryModel.find({ deleted: false })
-            .populate('user_id', ['name', 'email'])
-            .limit(limite)
-            .skip(desde)
-
-    res.send({
-        total: data.length,
-        data
-    })
-
-}
-
-module.exports = { getData, postData, updateData, deleteData, getCategories }
+module.exports = { getData, postData, updateData, deleteData }

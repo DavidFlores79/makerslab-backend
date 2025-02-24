@@ -8,9 +8,13 @@ const SummarySchema = Schema({
     comments: {
         type: String,
     },
-    image: {
+    document: {
         type: String,
-        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
+    },
+    document_status: {
+        type: Schema.Types.ObjectId,
+        ref: 'SummaryStatus',
+        required: [true, 'El Estatus de Revisión es obligatorio']
     },
     owner: {
         type: Schema.Types.ObjectId,

@@ -1,5 +1,5 @@
 const { verifyToken } = require('../helpers/jwt.helper');
-const summaryStatusModel = require('../models/summary_estatus.model');
+const summaryStatusModel = require('../models/summary_status.model');
 const userModel = require('../models/user.model');
 
 getData = async (req, res) => {
@@ -38,7 +38,7 @@ postData = async (req, res) => {
         const tokenData = await verifyToken(token)
 
         if(!tokenData) {
-            return res.status(401).send({msg: 'Token no válido. *'})
+            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
         }
     
         const user = await userModel.findById(tokenData._id)
