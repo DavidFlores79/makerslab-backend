@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const userModel = require('../models/user.model')
 const roleModel = require('../models/role.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
+const { USER_ROLE } = require('../config/constants')
 
 getData = async (req, res) => {
     try {
@@ -43,20 +44,19 @@ postData = async (req, res) => {
     const { name, email, password, image } = req.body
     let { role } = req.body;
     console.log('user role', role);
-
-    if(!role) {
-        const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
-        role = userRole._id; 
-        console.log('role del user', userRole);
-    }
-
-    const data = await new User({ name, email, password, role }).populate('role');
-
-    if(image != '') {
-        data.image = image
-    }
     
     try {
+        if (!role) {
+            const userRole = await roleModel.findOne({ name: USER_ROLE, status: true });
+            if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
+            role = userRole._id;
+        }
+        
+        const data = await new User({ name, email, password, role }).populate('role');
+    
+        if(image && image != '') {
+            data.image = image
+        }
 
         //encriptar la contraseña
         const salt = bcrypt.genSaltSync()
@@ -73,9 +73,11 @@ postData = async (req, res) => {
             data
         });
         
-    } catch (error) {   
-        console.log(error);
-        res.status(500).send({ msg: 'Error al guardar el registro' });
+    } catch (error) {
+        console.error('Error al registrar evento:', error);
+        res.status(error.status || 500).send({
+            msg: error.message || 'Error al guardar el registro',
+        });
     }
 }
 

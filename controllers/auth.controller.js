@@ -63,97 +63,79 @@ const login = async (req, res) => {
 }
 
 const registerEvent = async (req, res) => {
-
-    const { name, email, password, image, event_participation_data } = req.body
+    const { name, email, password, image, event_participation_data } = req.body;
     let { role } = req.body;
     console.log('user role', role);
 
-    const session = await mongoose.startSession(); // Iniciar la sesión de transacción  
-    session.startTransaction(); // Iniciar la transacción 
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
     try {
-        if(!role) {
+        if (!role) {
             const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
-
-            if (!userRole) {
-                // Si no se encuentra el rol, devuelve un mensaje de error
-                return res.status(404).send({ msg: 'No se encontró el rol para dar de alta al usuario' });
-            }
-
-            role = userRole._id; 
-            console.log('role del user', userRole);
-        }
-    
-        const data = await new userModel({ name, email, password, role }).populate('role');
-    
-        if(image != '') {
-            data.image = image
+            if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
+            role = userRole._id;
         }
 
-        //encriptar la contraseña
-        const salt = bcrypt.genSaltSync()
-        data.password = bcrypt.hashSync(password, salt)
-        
-        //guardar en la BD
-        // await data.save()
-        await data.save({ session }); // Guarda el usuario dentro de la transacción
+        const recordExist = await userModel.findOne({ email, status: true });
+        if (recordExist) throw { status: 400, message: 'El registro está duplicado' };
 
-        //Guardar informacion de la participacion Usuario
-        const participant = new eventParticipantModel(event_participation_data)
-        participant.creator = data._id 
-        participant.owner = data._id
+        const data = new userModel({ name, email, password, role });
+        if (image) data.image = image;
 
-        //validar si existe el registro
-        const recordExist = await eventParticipantModel.findOne({ owner: data._id })
-        if( recordExist) {
-            return res.status(400).send({
-                msg: 'La registro está duplicado'
-            })
-        }
-        
-        //guardar en la BD
-        // await participant.save()
-        await participant.save({ session }); // Guarda el usuario dentro de la transacción
-        data.event_participant = participant._id
-        console.log({data})
-        
-        await data.save({ session }); // Guarda el usuario dentro de la transacción
+        // Encriptar la contraseña
+        const salt = bcrypt.genSaltSync();
+        data.password = bcrypt.hashSync(password, salt);
 
-        //generar el JWT
-        const jwt = await generarJWT(data)
-        
-        sendNotificationEmail('NUEVO USUARIO', 
-        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
+        await data.save({ session });
 
-        // 3. Commit de la transacción (todas las operaciones fueron exitosas)  
-        await session.commitTransaction();  
+        // Guardar información de la participación del usuario
+        const participant = new eventParticipantModel(event_participation_data);
+        participant.creator = data._id;
+        participant.owner = data._id;
+        await participant.save({ session });
+
+        // Asignar participante al usuario y guardar
+        data.event_participant = participant._id;
+        await data.save({ session });
+
+        // Generar JWT
+        const jwt = await generarJWT(data);
+
+        sendNotificationEmail(
+            'NUEVO USUARIO',
+            `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`
+        );
+
+        await session.commitTransaction();
         session.endSession();
 
-        const newUser = await userModel.findOne(data._id).populate('role').populate('event_participant').populate({
-            path: "event_participant",
-            populate: {
-                path: "participation_mode",
-                select: "name" // Solo trae el campo 'name'
-            }
-        });
+        const newUser = await userModel.findById(data._id)
+            .populate('role')
+            .populate({
+                path: "event_participant",
+                populate: { path: "participation_mode", select: "name" }
+            });
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
             user: newUser,
             jwt,
         });
-        
-    } catch (error) {   
-        // 4. Rollback de la transacción (si hubo algún error)  
-        await session.abortTransaction();  
+
+    } catch (error) {
+        await session.abortTransaction();
         session.endSession();
-        console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+
+        console.error('Error al registrar evento:', error);
+
+        // Usar el código de error si existe, de lo contrario, devolver 500
+        res.status(error.status || 500).send({
+            msg: error.message || 'Error al guardar el registro',
+        });
     }
-}
+};
+
 
 const register = async (req, res) => {
 
@@ -161,15 +143,14 @@ const register = async (req, res) => {
     let { role } = req.body;
 
     try {
-        if(!role) {
+        if (!role) {
             const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
-            if (!userRole) {
-                // Si no se encuentra el rol, devuelve un mensaje de error
-                return res.status(404).send({ msg: 'No se encontró el rol para dar de alta al usuario' });
-            }
-
-            role = userRole._id; 
+            if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
+            role = userRole._id;
         }
+
+        const recordExist = await userModel.findOne({ email, status: true });
+        if (recordExist) throw { status: 400, message: 'El registro está duplicado' };
     
         const data = await new userModel({ name, email, password, role }).populate('role');
     
@@ -196,12 +177,11 @@ const register = async (req, res) => {
             jwt,
         });
         
-    } catch (error) {   
-        console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+    } catch (error) {
+        console.error('Error al registrar evento:', error);
+        res.status(error.status || 500).send({
+            msg: error.message || 'Error al guardar el registro',
+        });
     }
 }
 

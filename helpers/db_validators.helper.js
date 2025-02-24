@@ -36,7 +36,7 @@ const validateUserById = async ( id ) => {
 const validateEmail = async (email = '', {req}) => {
 
     const id = req.params.id
-    const existeEmail = await userModel.findOne({ email })
+    const existeEmail = await userModel.findOne({ email, deleted: false })
 
     //valida si el registro a actualizar es el mismo que
     //fue encontrado deja guardar el mismo valor

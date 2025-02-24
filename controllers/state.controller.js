@@ -6,7 +6,7 @@ const getData = async (req, res) => {
 
     const { limite = 0, desde = 0 } = req.query
 
-    const data = await entityModel.find({ deleted: false, status: true })
+    const data = await entityModel.find({ deleted: false })
         .populate('creator', ['name', 'email'])
         .limit(limite)
         .skip(desde)

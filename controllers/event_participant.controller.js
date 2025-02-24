@@ -6,7 +6,7 @@ getData = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await eventParticipantModel.find({ deleted: false, status: true })
+    const data = await eventParticipantModel.find()
             .populate('owner', ['name', 'email'])
             .populate('creator', ['name', 'email'])
             .populate('occupation', ['name'])

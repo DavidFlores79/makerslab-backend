@@ -41,7 +41,7 @@ getHomePosters = async (req, res) => {
 
     const { limite = 0, desde = 0 } = req.query
 
-    const data = await posterModel.find({ deleted: false, status: true })
+    const data = await posterModel.find({ deleted: false })
         .populate('user_id', ['name', 'email'])
         .populate('category')
         .limit(limite)
@@ -294,7 +294,7 @@ getCategories = async (req, res) => {
 
     const { limite = 0, desde = 0 } = req.query
 
-    const data = await categoryModel.find({ deleted: false, status: true })
+    const data = await categoryModel.find({ deleted: false })
         .populate('user_id', ['name', 'email'])
         .limit(limite)
         .skip(desde)

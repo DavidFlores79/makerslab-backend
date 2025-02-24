@@ -146,7 +146,7 @@ getPaymentMethods = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await paymentMethodModel.find({ deleted: false, status: true })
+    const data = await paymentMethodModel.find({ deleted: false })
             .populate('creator', ['name', 'email'])
             .limit(limite)
             .skip(desde)
