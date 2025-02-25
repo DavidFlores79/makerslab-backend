@@ -49,7 +49,7 @@ getData = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { title, comments, owner, document  } = req.body
+    const { title, comments, owner, document, document_name } = req.body
     // let NAME = name.toUpperCase()
 
     console.log( req.body );
@@ -58,7 +58,7 @@ postData = async (req, res) => {
     if(!document || document == '') {
         return res.status(400).send({msg: 'El documento no se ha cargado correctamente.'})
     }
-    const summary = await new summaryModel({ title, comments, document, owner })
+    const summary = await new summaryModel({ title, comments, document, document_name, owner })
     
     try {
         
@@ -112,12 +112,16 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, ...resto } = req.body
+    const { _id, document, ...resto } = req.body
 
     try {
+
+        if(!document || document == '') {
+            return res.status(400).send({msg: 'El documento no se ha cargado correctamente.'})
+        }    
        
         //guardar en la BD
-        const data = await summaryModel.findByIdAndUpdate(id, resto, {
+        const data = await summaryModel.findByIdAndUpdate(id, { document, ...resto }, {
             new: true
         }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email'])
         

@@ -12,6 +12,9 @@ const PaymentSchema = Schema({
         type: String,
         // default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
     },
+    image_name: {
+        type: String,
+    },
     amount: {
         type: Number,
         default: 0.0

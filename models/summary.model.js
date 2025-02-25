@@ -11,6 +11,9 @@ const SummarySchema = Schema({
     document: {
         type: String,
     },
+    document_name: {
+        type: String,
+    },
     document_status: {
         type: Schema.Types.ObjectId,
         ref: 'SummaryStatus',
