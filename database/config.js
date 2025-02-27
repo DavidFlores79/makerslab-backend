@@ -7,10 +7,7 @@ const dbConnection = async () => {
         const DB_URI = process.env.MONGODB
         mongoose.set('strictQuery', false)
         
-        await mongoose.connect(DB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
+        await mongoose.connect(DB_URI)
 
         console.log('**** MONGO DB: CONEXION CORRECTA ****')
 
