@@ -4,6 +4,8 @@ const eventParticipationModeModel = require('../models/event_participation_modes
 const paymentMethodModel = require('../models/payment_method.model');
 const paymentStatusModel = require('../models/payment_status.model');
 const paymentModel = require('../models/payment.model');
+const summaryModel = require('../models/summary.model');
+const userModel = require('../models/user.model');
 const { verifyToken } = require('../helpers/jwt.helper');
 
 
@@ -182,12 +184,47 @@ getUserDashboard = async (req, res) => {
         // Consulta para documentos
         const data = await paymentModel.find(query);
 
+        // Consulta para total de resumenes
+        const summary = await summaryModel.findOne(query).populate('document_status');
+
         const totalAmount = data.reduce((sum, payment) => sum + (payment.amount || 0), 0);
 
         res.send({
-            totalAmount: totalAmount,
-            totalPayments: data.length
+            payments: {
+                total: data.length,
+                totalAmount: totalAmount,
+            },
+            summary: {
+                exist: summary !== null,
+                percentage: summary ? summary.document_status.name.includes('CARGADO') ? 50 : 100 : 0,
+                data: summary,
+            }
+
         });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener los registros' });
+    }
+}
+
+getUserInfo = async (req, res) => {
+    const { id } = req.params
+    
+    try {
+        // Consulta para documentos
+        const data = await userModel.findById(id).populate({
+            path: "event_participant",
+            populate: { 
+                path: "participation_mode", select: "name",
+                path: "owner", select: "name",
+                path: "creator", select: "name",
+                path: "state", select: "name",
+                path: "occupation", select: "name",
+                path: "participation_mode", select: "name",
+            }
+        }).populate('role');
+
+        res.send({ data: data });
         
     } catch (error) {
         res.status(500).send({ msg: 'Error al obtener los registros' });
@@ -196,4 +233,4 @@ getUserDashboard = async (req, res) => {
 
 
 
-module.exports = { getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard }
+module.exports = { getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo }

@@ -3,7 +3,8 @@ const paymentMethodModel = require('../models/payment_method.model')
 const paymentStatusModel = require('../models/payment_status.model')
 const paymentModel = require('../models/payment.model')
 const userModel = require('../models/user.model')
-const { USER_ROLE, PENDING_PAYMENT } = require('../config/constants')
+const configurationModel = require('../models/configuration.model')
+const { USER_ROLE, PENDING_PAYMENT, maximumAllowed } = require('../config/constants')
 
 getData = async (req, res) => {
     try {
@@ -63,28 +64,38 @@ postData = async (req, res) => {
 
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
+        const user = await verifyToken(token)
 
-        if (!tokenData) {
+        if (!user) {
             return res.status(401).send({ msg: 'Su sesión ha caducado 😫' })
         }
 
-        const user = await userModel.findById(tokenData._id)
+        // Query con filtros
+        if (user.role.name == USER_ROLE) {
+            const query = { deleted: false, owner: user._id };
+            const totalItems = await paymentModel.countDocuments(query);
+            const config = await configurationModel.findOne();
+
+            if (totalItems >= config.userLimits.maxPayments) {
+                return res.status(400).send({ msg: maximumAllowed(config.userLimits.maxPayments) })
+            }
+        }
+
         if (!user.status || user.deleted || !user) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');
         } else {
 
             const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
-            if(!paymentStatus) {
+            if (!paymentStatus) {
                 return res.status(400).send({ msg: 'Estatus inicial no definido' });
             }
 
             //id del usuario logueado
-            payment.creator = tokenData._id
+            payment.creator = user._id
             //console.log(product);
-            if (tokenData.role.name == USER_ROLE) {
-                payment.owner = tokenData._id
+            if (user.role.name == USER_ROLE) {
+                payment.owner = user._id
                 payment.payment_status = paymentStatus._id
             }
 
@@ -94,9 +105,9 @@ postData = async (req, res) => {
             const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
                 new: true
             }).populate('owner', ['name', 'email'])
-            .populate('creator', ['name', 'email'])
-            .populate('payment_method')
-            .populate('payment_status')
+                .populate('creator', ['name', 'email'])
+                .populate('payment_method')
+                .populate('payment_status')
 
             res.status(201).send({
                 msg: 'Registro creado correctamente.',
@@ -121,10 +132,10 @@ updateData = async (req, res) => {
         const data = await paymentModel.findByIdAndUpdate(id, resto, {
             new: true
         })
-        .populate('owner', ['name', 'email'])
-        .populate('creator', ['name', 'email'])
-        .populate('payment_method')
-        .populate('payment_status')
+            .populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
+            .populate('payment_method')
+            .populate('payment_status')
 
         res.send({
             msg: `Se ha actualizado el registro`,
@@ -166,9 +177,9 @@ getPaymentMethods = async (req, res) => {
     const { limite = 0, desde = 0 } = req.query
 
     const data = await paymentMethodModel.find({ deleted: false })
-            .populate('creator', ['name', 'email'])
-            .limit(limite)
-            .skip(desde)
+        .populate('creator', ['name', 'email'])
+        .limit(limite)
+        .skip(desde)
 
     res.send({
         total: data.length,

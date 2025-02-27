@@ -1,8 +1,9 @@
-const { USER_ROLE } = require('../config/constants');
+const { USER_ROLE, maximumAllowed } = require('../config/constants');
 const { verifyToken } = require('../helpers/jwt.helper')
 const summaryModel = require('../models/summary.model')
 const summaryStatusModel = require('../models/summary_status.model')
 const userModel = require('../models/user.model')
+const configurationModel = require('../models/configuration.model')
 
 getData = async (req, res) => {
     try {
@@ -50,11 +51,22 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { title, comments, owner, document, document_name } = req.body
-    // let NAME = name.toUpperCase()
 
-    console.log( req.body );
+    //extraer usuario logueado del token
+    const token = req.headers.authorization.split(' ').pop()
+    const user = await verifyToken(token)
     
-    
+    // Query con filtros
+    if(user.role.name == USER_ROLE) {
+        const query = { deleted: false, owner: user._id };
+        const totalItems = await summaryModel.countDocuments(query);
+        const config = await configurationModel.findOne();
+                
+        if(totalItems >= config.userLimits.maxSummaries) {
+            return res.status(400).send({msg: maximumAllowed(config.userLimits.maxSummaries)})
+        }    
+    }
+
     if(!document || document == '') {
         return res.status(400).send({msg: 'El documento no se ha cargado correctamente.'})
     }

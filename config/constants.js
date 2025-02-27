@@ -4,4 +4,8 @@ const ADMIN_ROLE = 'ADMIN_ROLE';
 const SUPER_ROLE = 'SUPER_ROLE';
 const PENDING_PAYMENT = 'PENDIENTE';
 
-module.exports = { USER_ROLE, ADMIN_ROLE, SUPER_ROLE, PENDING_PAYMENT };
+const maximumAllowed = (qty) => {
+    return `El maximo de documentos permitidos es ${qty}.`;
+}
+
+module.exports = { USER_ROLE, ADMIN_ROLE, SUPER_ROLE, PENDING_PAYMENT, maximumAllowed };
