@@ -39,6 +39,34 @@ getData = async (req, res) => {
     }
 }
 
+getDatum = async (req, res) => {
+    const { id } = req.params
+    
+    try {
+        // Query con filtros
+        const query = { 
+            deleted: false,
+            'role.name': { $ne: 'SUPER_ROLE' }
+        };
+
+        const datum = await userModel.findById(id).populate({
+            path: "event_participant",
+            populate: { 
+                path: "participation_mode", select: "name",
+                path: "owner", select: "name",
+                path: "creator", select: "name",
+            }
+        }).populate('role');
+
+        res.send({
+            data: datum
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener registros' });
+    }
+}
+
 postData = async (req, res) => {
 
     const { name, email, password, image } = req.body
@@ -177,4 +205,4 @@ getRoles = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree }
+module.exports = { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree, getDatum }

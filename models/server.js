@@ -4,6 +4,7 @@ const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
 require('dotenv').config()
 
+const configurationRoutes = require("../routes/configuration.routes");
 const catalogsRoutes = require("../routes/catalogs.routes");
 const usersRoutes = require("../routes/users.routes");
 const rolesRoutes = require("../routes/roles.routes");
@@ -76,6 +77,7 @@ class Server {
   }
 
   routes() {
+    this.app.use("/api/configurations", configurationRoutes);
     this.app.use("/api/users", usersRoutes);
     this.app.use("/api/roles", rolesRoutes);
     this.app.use("/api/categories", categoriesRoutes);

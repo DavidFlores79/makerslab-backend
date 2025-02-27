@@ -29,8 +29,8 @@ getData = async (req, res) => {
         const data = await paymentModel.find(query)
             .limit(pageSize)
             .skip(skip)
-            .populate('owner')
-            .populate('creator')
+            .populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
             .populate('payment_method')
             .populate('payment_status');
 
@@ -120,7 +120,11 @@ updateData = async (req, res) => {
         //guardar en la BD
         const data = await paymentModel.findByIdAndUpdate(id, resto, {
             new: true
-        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('payment_method').populate('payment_status')
+        })
+        .populate('owner', ['name', 'email'])
+        .populate('creator', ['name', 'email'])
+        .populate('payment_method')
+        .populate('payment_status')
 
         res.send({
             msg: `Se ha actualizado el registro`,

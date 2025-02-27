@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree } = require('../controllers/users.controller');
+const { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree, getDatum } = require('../controllers/users.controller');
 const { validateRole, validateEmail, validateUserById, validateRoleById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
@@ -13,6 +13,9 @@ router.delete('/delete-all-users', deleteUsersExceptFirstThree);
 router.get('/', [
     checkPermissions(['VISUALIZAR'])
 ], getData);
+router.get('/:id', [
+    validarJWT
+], getDatum);
 router.get('/roles', getRoles);
 router.post('/',[
     checkPermissions(['CREAR']),
