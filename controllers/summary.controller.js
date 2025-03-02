@@ -135,7 +135,7 @@ updateData = async (req, res) => {
         //guardar en la BD
         const data = await summaryModel.findByIdAndUpdate(id, { document, ...resto }, {
             new: true
-        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email'])
+        }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('document_status')
         
         res.send({
            msg: `Se ha actualizado el registro`,

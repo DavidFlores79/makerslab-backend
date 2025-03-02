@@ -4,7 +4,7 @@ const userModel = require('../models/user.model')
 const eventParticipantModel = require('./../models/event_participant.model')
 const roleModel = require('../models/role.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
-const { USER_ROLE } = require('../config/constants')
+const { USER_ROLE, SUPER_ROLE } = require('../config/constants')
 const mongoose = require('mongoose'); // Importa mongoose  
 
 getData = async (req, res) => {
@@ -16,7 +16,7 @@ getData = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
-            'role.name': { $ne: 'SUPER_ROLE' }
+            'role.name': { $ne: SUPER_ROLE }
         };
 
         // Consulta para documentos
@@ -48,7 +48,7 @@ getDatum = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
-            'role.name': { $ne: 'SUPER_ROLE' }
+            'role.name': { $ne: SUPER_ROLE }
         };
 
         const datum = await userModel.findById(id).populate({
@@ -114,8 +114,6 @@ postData = async (req, res) => {
 updateData = async (req, res) => {
     const { id } = req.params
     const { _id, password, google, event_participant, ...resto } = req.body
-    console.log('resto', resto);
-
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -212,7 +210,7 @@ getRoles = async (req, res) => {
 
     const { limite = 0, desde= 0 } = req.query
 
-    const data = await roleModel.find({ deleted: false, status: true, name: {$ne: 'SUPER_ROLE'} })
+    const data = await roleModel.find({ deleted: false, status: true, name: {$ne: SUPER_ROLE } })
             .limit(limite)
             .skip(desde)
             // .populate('modules')

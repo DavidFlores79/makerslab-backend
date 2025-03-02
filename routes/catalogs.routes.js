@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { validarJWT, verifyGuestToken } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
-const { getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo } = require('../controllers/catalogs.controller');
+const { getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo, getSummaryStatuses, getUsers } = require('../controllers/catalogs.controller');
 const router = Router()
 
 router.get('/states',[
@@ -23,6 +23,14 @@ router.get('/payment-methods',[
 router.get('/payment-status',[
     verifyGuestToken,
 ], getPaymentStatus);
+
+router.get('/summary-statuses',[
+    verifyGuestToken,
+], getSummaryStatuses);
+
+router.get('/users',[
+    verifyGuestToken,
+], getUsers);
 
 router.get('/user-dashboard/:id',[
     verifyGuestToken,

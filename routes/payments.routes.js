@@ -13,6 +13,7 @@ router.get('/', [
 ], getData);
 router.get('/payment-methods', getPaymentMethods);
 router.post('/',[
+    validarJWT,
     checkPermissions(['CREAR']),
     check('description', 'La descripción es obligatorio.').not().isEmpty(),
     check('status', 'El status debe ser de tipo Boolean.').optional().isBoolean(),
@@ -21,6 +22,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    validarJWT,
     checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validatePaymentById ),

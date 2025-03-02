@@ -14,16 +14,12 @@ getData = async (req, res) => {
 
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
-        const user = await verifyToken(token)
-
-        if (!user) {
-            return res.status(401).send({ msg: 'Su sesión ha caducado 😫' })
-        }
+        const tokenData = await verifyToken(token)
 
         // Query con filtros
         const query = { deleted: false };
-        if (user.role.name == USER_ROLE) {
-            query.owner = user._id
+        if (tokenData.role.name == USER_ROLE) {
+            query.owner = tokenData._id
         }
 
         // Consulta para documentos
@@ -64,12 +60,9 @@ postData = async (req, res) => {
 
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
-        const user = await verifyToken(token)
-
-        if (!user) {
-            return res.status(401).send({ msg: 'Su sesión ha caducado 😫' })
-        }
-
+        const tokenData = await verifyToken(token)
+        const user = await userModel.findById(tokenData._id);
+        
         // Query con filtros
         if (user.role.name == USER_ROLE) {
             const query = { deleted: false, owner: user._id };
@@ -81,39 +74,34 @@ postData = async (req, res) => {
             }
         }
 
-        if (!user.status || user.deleted || !user) {
-            res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
-            console.log('Usuario Bloqueado. Sin Permisos');
-        } else {
-
-            const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
-            if (!paymentStatus) {
-                return res.status(400).send({ msg: 'Estatus inicial no definido' });
-            }
-
-            //id del usuario logueado
-            payment.creator = user._id
-            //console.log(product);
-            if (user.role.name == USER_ROLE) {
-                payment.owner = user._id
-                payment.payment_status = paymentStatus._id
-            }
-
-            //guardar en la BD
-            await payment.save()
-
-            const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
-                new: true
-            }).populate('owner', ['name', 'email'])
-                .populate('creator', ['name', 'email'])
-                .populate('payment_method')
-                .populate('payment_status')
-
-            res.status(201).send({
-                msg: 'Registro creado correctamente.',
-                data: data
-            });
+        const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
+        if (!paymentStatus) {
+            return res.status(400).send({ msg: 'Estatus inicial no definido' });
         }
+        console.log({paymentStatus});
+        
+        //id del usuario logueado
+        payment.creator = user._id
+        //console.log(product);
+        if (user.role.name == USER_ROLE) {
+            payment.owner = user._id
+        }
+        payment.payment_status = paymentStatus._id
+
+        //guardar en la BD
+        await payment.save()
+
+        const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
+            new: true
+        }).populate('owner', ['name', 'email'])
+            .populate('creator', ['name', 'email'])
+            .populate('payment_method')
+            .populate('payment_status')
+
+        res.status(201).send({
+            msg: 'Registro creado correctamente.',
+            data: data
+        });
 
 
     } catch (error) {

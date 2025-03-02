@@ -8,9 +8,14 @@ const { Validator } = require('../middlewares/validator.middleware');
 const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
-router.delete('/delete-all-users', deleteUsersExceptFirstThree);
+router.delete('/delete-all-users', [
+    validarJWT,
+    checkPermissions(['ELIMINAR']),
+    checkRoleAuth(['SUPER_ROLE']),
+],deleteUsersExceptFirstThree);
 
 router.get('/', [
+    validarJWT,
     checkPermissions(['VISUALIZAR'])
 ], getData);
 router.get('/:id', [
@@ -18,6 +23,7 @@ router.get('/:id', [
 ], getDatum);
 router.get('/roles', getRoles);
 router.post('/',[
+    validarJWT,
     checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('email', 'El email es obligatorio.').not().isEmpty(),
@@ -32,6 +38,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
+    validarJWT,
     checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
@@ -43,8 +50,8 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
-    checkPermissions(['ELIMINAR']),
     validarJWT,
+    checkPermissions(['ELIMINAR']),
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
