@@ -1,9 +1,11 @@
 const User = require('../models/user.model')
 const bcrypt = require('bcryptjs')
 const userModel = require('../models/user.model')
+const eventParticipantModel = require('./../models/event_participant.model')
 const roleModel = require('../models/role.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 const { USER_ROLE } = require('../config/constants')
+const mongoose = require('mongoose'); // Importa mongoose  
 
 getData = async (req, res) => {
     try {
@@ -111,8 +113,12 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, password, google, ...resto } = req.body
+    const { _id, password, google, event_participant, ...resto } = req.body
     console.log('resto', resto);
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
 
         if( password ) {
@@ -123,8 +129,19 @@ updateData = async (req, res) => {
         
         //guardar en la BD
         const data = await userModel.findByIdAndUpdate(id, resto, {
-            new: true
+            new: true,
+            session // Include the session
         }).populate('role');
+
+        // Guardar información de la participación del usuario
+        if (event_participant && event_participant._id) {
+            const eventParticipant = await eventParticipantModel.findByIdAndUpdate(event_participant._id, event_participant, { session });
+            data.event_participant = eventParticipant._id;
+        }
+        await data.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
 
         res.send({
            msg: `Se ha actualizado el registro`,
@@ -133,7 +150,9 @@ updateData = async (req, res) => {
         
     } catch (error) {   
         console.log(error);
-        res.status(500).send({ msg: 'Error al actualizar un registro' });
+        await session.abortTransaction();
+        session.endSession();
+        res.status(500).send({ msg: 'Error al actualizar un registro', error: error.message });
     }
 
 }

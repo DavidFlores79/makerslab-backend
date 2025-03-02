@@ -1,6 +1,7 @@
 const stateModel = require('../models/state.model');
 const occupationModel = require('../models/occupation.model');
 const eventParticipationModeModel = require('../models/event_participation_modes.model');
+const eventParticipantModel = require('../models/event_participant.model');
 const paymentMethodModel = require('../models/payment_method.model');
 const paymentStatusModel = require('../models/payment_status.model');
 const paymentModel = require('../models/payment.model');
@@ -212,17 +213,13 @@ getUserInfo = async (req, res) => {
     
     try {
         // Consulta para documentos
-        const data = await userModel.findById(id).populate({
-            path: "event_participant",
-            populate: { 
-                path: "participation_mode", select: "name",
-                path: "owner", select: "name",
-                path: "creator", select: "name",
-                path: "state", select: "name",
-                path: "occupation", select: "name",
-                path: "participation_mode", select: "name",
-            }
-        }).populate('role');
+        const data = await userModel.findById(id).populate('role');
+
+        const eventInfo = await eventParticipantModel.findById(data.event_participant)
+                    .populate('occupation', ['name'])
+                    .populate('participation_mode', ['name'])
+                    .populate('state', ['name']);
+        data.event_participant = eventInfo;
 
         res.send({ data: data });
         

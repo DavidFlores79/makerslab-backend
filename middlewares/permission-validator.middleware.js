@@ -21,6 +21,12 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
         }
         const userData = await userModel.findById(tokenData._id);
 
+        const { _id } = req.body;
+        console.log('USERID', _id);
+        
+        //si el usuario es el mismo que envia el request
+        if(userData._id == _id) return next(); 
+
         const menu = await getUserMenu( userData.role );
         let result = menu.find(menu => menu.name === route); //Busca en el array de rutas del usuario si esta incluido ahi dicha ruta
         console.log('ruta y permisos: ', result);
