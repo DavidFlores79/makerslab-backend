@@ -49,19 +49,18 @@ getData = async (req, res) => {
 postData = async (req, res) => {
 
     const { _id, image, ...resto } = req.body
-    // let NAME = name.toUpperCase()
-    const payment = await new paymentModel({ ...resto })
-
-    if (image != '') {
-        payment.image = image
-    }
-
+    
     try {
-
+        const payment = await new paymentModel({ ...resto })
+        if (image != '') {
+            payment.image = image
+        }
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
         const tokenData = await verifyToken(token)
-        const user = await userModel.findById(tokenData._id);
+        const user = await userModel.findById(tokenData._id).populate('role');
+        console.log({user});
+        
         
         // Query con filtros
         if (user.role.name == USER_ROLE) {
@@ -77,9 +76,7 @@ postData = async (req, res) => {
         const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
         if (!paymentStatus) {
             return res.status(400).send({ msg: 'Estatus inicial no definido' });
-        }
-        console.log({paymentStatus});
-        
+        }        
         //id del usuario logueado
         payment.creator = user._id
         //console.log(product);
@@ -115,6 +112,18 @@ updateData = async (req, res) => {
     const { _id, ...resto } = req.body
 
     try {
+        //extraer usuario logueado del token
+        const token = req.headers.authorization.split(' ').pop()
+        const tokenData = await verifyToken(token)
+        const user = await userModel.findById(tokenData._id).populate('role');
+        
+        if (user.role.name == USER_ROLE) {
+            const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
+            if (!paymentStatus) {
+                return res.status(400).send({ msg: 'Estatus inicial no definido' });
+            }
+            resto.payment_status = paymentStatus._id
+        }
 
         //guardar en la BD
         const data = await paymentModel.findByIdAndUpdate(id, resto, {
