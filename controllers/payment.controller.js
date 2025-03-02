@@ -5,6 +5,7 @@ const paymentModel = require('../models/payment.model')
 const userModel = require('../models/user.model')
 const configurationModel = require('../models/configuration.model')
 const { USER_ROLE, PENDING_PAYMENT, maximumAllowed } = require('../config/constants')
+const { notifyUpdatePayment, notifyNewPayment } = require('../helpers/payment_notifications.helper')
 
 getData = async (req, res) => {
     try {
@@ -58,9 +59,7 @@ postData = async (req, res) => {
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
         const tokenData = await verifyToken(token)
-        const user = await userModel.findById(tokenData._id).populate('role');
-        console.log({user});
-        
+        const user = await userModel.findById(tokenData._id).populate('role');        
         
         // Query con filtros
         if (user.role.name == USER_ROLE) {
@@ -88,12 +87,15 @@ postData = async (req, res) => {
         //guardar en la BD
         await payment.save()
 
+        
         const data = await paymentModel.findByIdAndUpdate(payment._id, resto, {
             new: true
         }).populate('owner', ['name', 'email'])
-            .populate('creator', ['name', 'email'])
-            .populate('payment_method')
-            .populate('payment_status')
+        .populate('creator', ['name', 'email'])
+        .populate('payment_method')
+        .populate('payment_status')
+        
+        notifyNewPayment(data);
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
@@ -133,6 +135,8 @@ updateData = async (req, res) => {
             .populate('creator', ['name', 'email'])
             .populate('payment_method')
             .populate('payment_status')
+
+        notifyUpdatePayment(data);
 
         res.send({
             msg: `Se ha actualizado el registro`,

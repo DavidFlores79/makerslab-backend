@@ -3,7 +3,8 @@ const { verifyToken } = require('../helpers/jwt.helper')
 const summaryModel = require('../models/summary.model')
 const summaryStatusModel = require('../models/summary_status.model')
 const userModel = require('../models/user.model')
-const configurationModel = require('../models/configuration.model')
+const configurationModel = require('../models/configuration.model');
+const { notifyUpdateSummary, notifyNewSummary } = require('../helpers/summary_notifications.helper');
 
 getData = async (req, res) => {
     try {
@@ -107,6 +108,8 @@ postData = async (req, res) => {
                     .populate('owner', ['name', 'email'])
                     .populate('creator', ['name', 'email'])
                     .populate('document_status')
+            
+            notifyNewSummary(data);
 
             res.status(201).send({
                 msg: 'Registro creado correctamente.',
@@ -136,6 +139,8 @@ updateData = async (req, res) => {
         const data = await summaryModel.findByIdAndUpdate(id, { document, ...resto }, {
             new: true
         }).populate('owner', ['name', 'email']).populate('creator', ['name', 'email']).populate('document_status')
+
+        notifyUpdateSummary(data);
         
         res.send({
            msg: `Se ha actualizado el registro`,

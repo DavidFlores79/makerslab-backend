@@ -1,6 +1,6 @@
 const nodeMailer = require('nodemailer');
 
-async function sendContactMeEmail(name, email, subject, message) {
+async function sendInfoEmail(name, email, subject, message) {
 
     const recipients = process.env.MAIL_RECIPIENTS.split(',');
     console.log('recipients', recipients);
@@ -11,7 +11,7 @@ async function sendContactMeEmail(name, email, subject, message) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Mensaje de Contacto</title>
+    <title>Nuevo Mensaje</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,11 +34,11 @@ async function sendContactMeEmail(name, email, subject, message) {
             padding: 20px;
         }
         .header img {
-            max-width: 150px;
+            max-width: 250px;
             margin-bottom: 10px;
         }
         .header h1 {
-            font-size: 24px;
+            font-size: 23px;
             margin: 0;
         }
         .content {
@@ -50,8 +50,13 @@ async function sendContactMeEmail(name, email, subject, message) {
             margin-bottom: 20px;
             color: #90bb4d;
         }
+        .content span {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color:rgb(43, 43, 43);
+        }
         .content p {
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1.6;
             margin: 10px 0;
         }
@@ -85,29 +90,27 @@ async function sendContactMeEmail(name, email, subject, message) {
         <!-- Encabezado -->
         <div class="header">
             <img src="https://congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png" alt="Logo de Congreso Promoción Salud">
-            <h1>Nuevo Mensaje de Contacto</h1>
+            <h1>Notificación</h1>
         </div>
 
         <!-- Contenido -->
         <div class="content">
-            <h2>Hola,</h2>
-            <p>Has recibido un nuevo mensaje a través del formulario de contacto. Aquí están los detalles:</p>
+            <h2>Hola <span>${name}</span>,</h2>
+            <p>Has recibido un nuevo mensaje. Estos son los detalles:</p>
 
             <div class="details">
-                <p><strong>Nombre:</strong> ${name}</p>
-                <p><strong>Email:</strong> ${email}</p>
                 <p><strong>Asunto:</strong> ${subject}</p>
                 <p><strong>Mensaje:</strong></p>
                 <p>${message}</p>
             </div>
 
-            <p style="margin-top: 20px;">Por favor, responde a este mensaje lo antes posible.</p>
+            <p style="margin-top: 20px;">Si requiere alguna aclaración al respecto, favor de ponerse en <a href="https://www.congresopromocionsalud.com/#contact">contacto</a> con la Administración del Congreso.</p>
         </div>
 
         <!-- Pie de página -->
         <div class="footer">
             <p>Este es un correo automático, por favor no responder directamente.</p>
-            <p>Visita nuestro sitio web: <a href="https://congresopromocionsalud.com">Congreso Promoción Salud</a></p>
+            <p>Visita nuestro sitio web: <a href="https://congresopromocionsalud.com">Congreso Promoción Salud ${new Date().getFullYear()} </a></p>
         </div>
     </div>
 </body>
@@ -127,7 +130,7 @@ async function sendContactMeEmail(name, email, subject, message) {
 
     const info = await transporter.sendMail({
         from: process.env.MAIL_FROM_NAME,
-        to: recipients,
+        to: [email, ...recipients],
         subject: subject,
         html: html
     });
@@ -138,4 +141,4 @@ async function sendContactMeEmail(name, email, subject, message) {
 
 }
 
-module.exports = { sendContactMeEmail }
+module.exports = { sendInfoEmail }
