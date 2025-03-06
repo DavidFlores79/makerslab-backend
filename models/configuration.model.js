@@ -1,6 +1,10 @@
 const { Schema, model } = require('mongoose')
 
 const configurationSchema = new Schema({
+    companyLogo: {
+        type: String, // URL of the logo stored in Cloudinary
+        default: "https://www.congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png"
+    },
     companyName: {
         type: String,
         default: "Congreso Promoción Salud 2025"
@@ -17,10 +21,7 @@ const configurationSchema = new Schema({
         type: String,
         default: "9994124345"
     },
-    companyLogo: {
-        type: String, // URL of the logo stored in Cloudinary
-        default: "https://www.congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png"
-    },
+    notificationEmails: [{ type: String }],
     userLimits: {
         maxPayments: {
             type: Number,
