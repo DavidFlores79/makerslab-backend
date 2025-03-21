@@ -99,9 +99,6 @@ const registerEvent = async (req, res) => {
         data.event_participant = participant._id;
         await data.save({ session });
 
-        // Generar JWT
-        const jwt = await generarJWT(data);
-
         sendNotificationEmail(
             'NUEVO USUARIO',
             `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`
@@ -116,6 +113,9 @@ const registerEvent = async (req, res) => {
                 path: "event_participant",
                 populate: { path: "participation_mode", select: "name" }
             });
+            
+        // Generar JWT
+        const jwt = await generarJWT(newUser);
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',
