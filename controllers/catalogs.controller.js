@@ -9,6 +9,7 @@ const summaryModel = require('../models/summary.model');
 const summaryStatusModel = require('../models/summary_status.model');
 const userModel = require('../models/user.model');
 const roleModel = require('../models/role.model');
+const categoryModel = require('../models/category.model');
 const { verifyToken } = require('../helpers/jwt.helper');
 const { SUPER_ROLE, ADMIN_ROLE } = require('../config/constants');
 
@@ -273,6 +274,37 @@ const getRoles = async (req, res) => {
     }
 }
 
+const getCategories = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.page_size) || 10;
+        const skip = (page - 1) * pageSize;
+
+        // Query con filtros
+        const query = { 
+            deleted: false,
+        };
+
+        // Consulta para documentos
+        const data = await categoryModel.find(query)
+            .limit(pageSize)
+            .skip(skip)
+ 
+        // Consulta para total de documentos
+        const totalItems = data.lenght;
+
+        res.send({
+            page: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            data: data
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error al obtener registros' });
+    }
+}
+
 getUserDashboard = async (req, res) => {
 
     const { id } = req.params
@@ -333,4 +365,4 @@ getUserInfo = async (req, res) => {
 
 
 
-module.exports = { getUsers, getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo, getSummaryStatuses, getRoles }
+module.exports = { getUsers, getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo, getSummaryStatuses, getRoles, getCategories }

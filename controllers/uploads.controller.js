@@ -260,12 +260,13 @@ const uploadCloudinary = async (req, res) => {
     // }
 
     // Upload
-    const options = { folder: coleccion }
+    let options = { folder: coleccion }
 
     if(mimetype == 'audio/mpeg') {
 
       coleccion = coleccion + '/audios';
       options.resource_type = "video";
+      options.folder = coleccion;
 
     };
     console.log('collection', coleccion);
