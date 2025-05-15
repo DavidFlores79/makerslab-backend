@@ -12,6 +12,8 @@ getData = async (req, res) => {
         const pageSize = parseInt(req.query.page_size) || 10;
         const skip = (page - 1) * pageSize;
 
+        const search = req.query.search?.trim() || '';
+
         //extraer usuario logueado del token
         const token = req.headers.authorization.split(' ').pop()
         const user = await verifyToken(token)
@@ -24,6 +26,20 @@ getData = async (req, res) => {
         const query = { deleted: false };
         if(user.role.name == USER_ROLE) {
             query.owner = user._id
+        }
+
+        // Si hay un término de búsqueda, agregar condiciones
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            
+            // Buscar usuarios cuyo nombre coincida con el término de búsqueda
+            const matchingOwners = await userModel.find({ name: regex }, '_id');
+            const ownerIds = matchingOwners.map(user => user._id);
+
+            query.$or = [
+                { title: regex },
+                { owner: { $in: ownerIds } }
+            ];
         }
 
         // Consulta para documentos

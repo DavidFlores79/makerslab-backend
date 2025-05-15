@@ -13,11 +13,24 @@ getData = async (req, res) => {
         const pageSize = parseInt(req.query.page_size) || 10;
         const skip = (page - 1) * pageSize;
 
+        const search = req.query.search?.trim() || '';
+
         // Query con filtros
         const query = { 
             deleted: false,
             'role.name': { $ne: SUPER_ROLE }
         };
+
+        // Si hay un término de búsqueda, agregar condiciones
+        if (search) {
+            const regex = new RegExp(search, 'i'); // 'i' hace que no sea case sensitive
+            query.$or = [
+                { name: regex },
+                { email: regex },
+                // Si también quieres buscar por nombre de rol:
+                { 'role.name': regex }
+            ];
+        }
 
         // Consulta para documentos
         const data = await userModel.find(query)
