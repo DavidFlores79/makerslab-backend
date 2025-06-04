@@ -55,6 +55,7 @@ getOcuppations = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
@@ -87,6 +88,7 @@ getEventParticipationModes = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
@@ -119,6 +121,7 @@ getPaymentMethods = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
@@ -151,6 +154,7 @@ getPaymentStatus = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
@@ -183,6 +187,7 @@ getSummaryStatuses = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
@@ -250,6 +255,7 @@ const getRoles = async (req, res) => {
         // Query con filtros
         const query = { 
             deleted: false,
+            status: true,
         };
 
         // Consulta para documentos
