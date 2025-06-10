@@ -3,6 +3,7 @@ const categoryModel = require('../models/category.model')
 const posterModel = require('../models/poster.model')
 const userModel = require('../models/user.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
+const mongoose = require('mongoose')
 
 getData = async (req, res) => {
     try {
@@ -10,10 +11,47 @@ getData = async (req, res) => {
         const pageSize = parseInt(req.query.page_size) || 10;
         const skip = (page - 1) * pageSize;
 
+        const search = req.query.search?.trim() || '';
+        const catParam = req.query.category?.trim() || '';
+
         // Query con filtros
-        const query = {
-            deleted: false,
-        };
+        const query = { deleted: false };
+
+ // Búsqueda por término general (name, description, authors)
+        const orFilters = [];
+
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            orFilters.push(
+                { name: regex },
+                { description: regex },
+                { authors: regex }
+            );
+        }
+
+        // Búsqueda por categoría
+        if (catParam) {
+            let categoryIds = [];
+
+            // Verificamos si es un ObjectId válido
+            if (mongoose.Types.ObjectId.isValid(catParam)) {
+                categoryIds.push(catParam);
+            }
+
+            // También buscamos por nombre
+            const matchedCategories = await categoryModel.find({ name: new RegExp(catParam, 'i') });
+            categoryIds.push(...matchedCategories.map(cat => cat._id));
+
+            // Eliminamos duplicados
+            categoryIds = [...new Set(categoryIds.map(id => id.toString()))];
+
+            // Agregamos al filtro principal
+            query.category = { $in: categoryIds };
+        }
+
+        if (orFilters.length > 0) {
+            query.$or = orFilters;
+        }
 
         // Consulta para documentos
         const data = await posterModel.find(query)
@@ -33,6 +71,7 @@ getData = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Error al obtener registros:', error);
         res.status(500).send({ msg: 'Error al obtener registros' });
     }
 }
