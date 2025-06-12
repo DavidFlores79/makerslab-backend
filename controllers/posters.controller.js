@@ -203,7 +203,7 @@ postData = async (req, res) => {
     }
 
     //crear el codigo del poster
-    // dato.code = makeid(5);
+    dato.code = makeid(5);
 
     try {
 
