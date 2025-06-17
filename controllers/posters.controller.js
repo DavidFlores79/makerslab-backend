@@ -190,7 +190,7 @@ getMyPoster = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, category, status, available, image, audio, authors, code, contactEmail } = req.body
+    const { name, category, status, available, image, audio, authors, code, contactEmail, user_id } = req.body
     let NAME = name.toUpperCase()
     const dato = await new posterModel({ name: NAME, category: category._id, authors, status: status, available, code, contactEmail }).populate('category')
 
@@ -231,6 +231,10 @@ postData = async (req, res) => {
 
             //id del usuario logueado
             dato.user_id = tokenData._id
+
+            if(user_id) {
+                dato.user_id = user_id
+            }
 
             //guardar en la BD
             await dato.save();
