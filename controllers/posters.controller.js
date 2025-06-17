@@ -235,6 +235,10 @@ postData = async (req, res) => {
             //guardar en la BD
             await dato.save();
 
+            //populate dato
+            await dato.populate('user_id', ['name', 'email']);
+            
+            //enviar notificación por email
             sendNotificationEmail('NUEVO CARTEL',
                 `${usuario.name} ha creado el nuevo Cartel ${dato.name}.`);
 
