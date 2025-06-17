@@ -14,7 +14,7 @@ const login = async (req, res) => {
 
     try {
 
-        const user = await userModel.findOne({ email }).populate('role').populate('event_participant').populate({
+        const user = await userModel.findOne({ email, status: true }).populate('role').populate('event_participant').populate({
             path: "event_participant",
             populate: {
               path: "participation_mode",
@@ -29,6 +29,8 @@ const login = async (req, res) => {
         }
 
         if(!user.status) {
+            console.log({user});
+            
             return res.status(401).send({
                 msg: 'Usuario bloqueado - status'
             })
