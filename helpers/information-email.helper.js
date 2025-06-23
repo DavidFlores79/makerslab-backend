@@ -119,25 +119,32 @@ async function sendInfoEmail(name, email, subject, message) {
 
 
     const transporter = nodeMailer.createTransport({
-        host: process.env.MAIL_HOST,
-        port: process.env.MAIL_PORT,
-        secure: true,
+        host: process.env.SMTP2GO_HOST,
+        port: Number(process.env.SMTP2GO_PORT) || 587, // Puerto por defecto para TLS
+        secure: false, // TLS se negocia automáticamente
         auth: {
-            user: process.env.MAIL_USERNAME,
-            pass: process.env.MAIL_PASSWORD
-        }
+            user: process.env.SMTP2GO_USERNAME,
+            pass: process.env.SMTP2GO_PASSWORD
+        },
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100
     });
 
-    const info = await transporter.sendMail({
-        from: process.env.MAIL_FROM_NAME,
-        to: [email, ...recipients],
-        subject: subject,
-        html: html
-    });
-
-    console.log('Message sent: ', info.messageId);
-    console.log('Recipient accepted: ', info.accepted);
-    console.log('Recipient rejected: ', info.rejected);
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.SMTP2GO_FROM_NAME,
+            to: [email, ...recipients],
+            subject: subject,
+            html: html
+        });
+        console.log('Message sent: ', info.messageId);
+        console.log('Recipient accepted: ', info.accepted);
+        console.log('Recipient rejected: ', info.rejected);
+    } catch (err) {
+        console.error('❗ Error al enviar correo:', err);
+        // Aquí puedes reintentar o guardarlo en una cola
+    }
 
 }
 
