@@ -243,8 +243,7 @@ postData = async (req, res) => {
             await dato.populate('user_id', ['name', 'email']);
             
             //enviar notificación por email
-            sendNotificationEmail('NUEVO CARTEL',
-                `${usuario.name} ha creado el nuevo Cartel ${dato.name}.`);
+            sendNotificationEmail('NUEVO CARTEL', `${usuario.name} ha creado el nuevo Cartel ${dato.name}.`);
 
             console.log(`${usuario.name} ha creado el nuevo Cartel ${dato.name}`);
 
