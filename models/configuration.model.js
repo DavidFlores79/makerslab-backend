@@ -45,6 +45,11 @@ const configurationSchema = new Schema({
             type: String,
             default: "Contact Us"
         }
+    },
+    // Nuevo campo: Fecha límite para registrarse
+    registrationDeadline: {
+        type: Date,
+        default: null // o puedes poner una fecha por defecto si lo deseas
     }
 },
 {
