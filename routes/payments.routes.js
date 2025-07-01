@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { getData, postData, updateData, deleteData, getPaymentMethods } = require('../controllers/payment.controller');
+const { getData, postData, updateData, deleteData, getPaymentMethods, exportToExcel } = require('../controllers/payment.controller');
 const { validatePaymentById, validatePaymentMethodById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validarJWT } = require('../middlewares/validar-jwt.middleware');
@@ -38,5 +38,6 @@ router.delete('/:id', [
     check('id').custom( validatePaymentById ),
     Validator
 ], deleteData);
+router.get('/export', exportToExcel);
 
 module.exports = router

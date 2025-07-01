@@ -6,6 +6,7 @@ const userModel = require('../models/user.model')
 const configurationModel = require('../models/configuration.model')
 const { USER_ROLE, PENDING_PAYMENT, maximumAllowed } = require('../config/constants')
 const { notifyUpdatePayment, notifyNewPayment } = require('../helpers/payment_notifications.helper')
+const ExcelJS = require('exceljs');
 
 getData = async (req, res) => {
     try {
@@ -206,4 +207,72 @@ getPaymentMethods = async (req, res) => {
 
 }
 
-module.exports = { getData, postData, updateData, deleteData, getPaymentMethods }
+exportToExcel = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = 1000;
+    const skip = (page - 1) * pageSize;
+
+    // Query con filtros
+    const query = { deleted: false };
+
+    // Consulta para documentos
+    const payments = await paymentModel.find(query)
+        .limit(pageSize)
+        .skip(skip)
+        .populate('owner', ['name', 'email'])
+        .populate('creator', ['name', 'email'])
+        .populate('payment_method')
+        .populate('payment_status');
+
+    // Consulta para total de documentos
+    const totalItems = await paymentModel.countDocuments(query);
+
+    // return res.json(payments);
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Payments');
+
+    worksheet.columns = [
+        { header: 'Nombre', key: 'user_name', width: 40 },
+        { header: 'Descripción', key: 'description', width: 50 },
+        { header: 'Importe', key: 'amount', width: 20 },
+        { header: 'Método Pago', key: 'payment_method', width: 20 },
+        { header: 'Comentarios', key: 'comments', width: 80 },
+        { header: 'Estatus', key: 'payment_status', width: 20 },
+        { header: 'Fecha Pago', key: 'created_at', width: 20 },
+    ];
+
+    payments.forEach((payment) => {
+        const fechaUTC = new Date(payment.createdAt);
+        const fechaLocal = fechaUTC.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+
+      worksheet.addRow({
+        user_name: payment.owner ? payment.owner.name : 'N/A',
+        description: payment.description ? payment.description : 'N/A',
+        amount: payment.amount ? payment.amount : 'N/A',
+        payment_method: payment.payment_method ? payment.payment_method?.name : 'N/A',
+        comments: payment.comments ? payment.comments : 'N/A',
+        payment_status: payment.payment_status ? payment.payment_status?.name : 'N/A',
+        created_at: fechaLocal,
+      });
+    });
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename = Payments.xlsx'
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Error al exportar a Excel:', error);
+    res.status(500).json({ error: 'Error al generar el archivo Excel.' });
+  }
+};
+
+module.exports = { getData, postData, updateData, deleteData, getPaymentMethods, exportToExcel }
