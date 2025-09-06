@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { getUserMenu } = require('../controllers/module_permission_role.controller')
 
-const generarJWT = ( user ) => {
+const generateJWT = ( user ) => {
 
     return new Promise( async ( resolve, reject) => {
 
@@ -35,4 +35,4 @@ const verifyToken = async (token) => {
 
 }
 
-module.exports = { generarJWT, verifyToken }
+module.exports = { generateJWT, verifyToken }

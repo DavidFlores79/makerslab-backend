@@ -1,31 +1,32 @@
 const {  Schema, model } = require('mongoose')
 
 const UserSchema = Schema({
-    name: {
-        type: String,
-        required: [true, 'El nombre es obligatorio']
-    },
     email: {
         type: String,
-        required: [true, 'El correo es obligatorio'],
+        unique: true,
+        sparse: true,
     },
     password: {
         type: String,
         required: [true, 'La contraseña es obligatoria'],
-        
     },
     image: {
         type: String,
-        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1684249857/files/63f5014ee1ea6226ba9dbfd3_gmwwgx.png'
+        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1751821656/files/63f5014ee1ea6226ba9dbfd3_gmwwgx.png'
+    },
+    imagePublicId: {
+        type: String,
+        trim: true
+    },
+    phone: {
+        type: String,
+        required: [true, 'El teléfono es obligatorio'],
+        unique: true
     },
     role: {
         type: Schema.Types.ObjectId,
         ref: 'Role',
         required: [true, 'El id del role es obligatorio']
-    },
-    event_participant: {
-        type: Schema.Types.ObjectId,
-        ref: 'EventParticipant',
     },
     status: {
         type: Boolean,
@@ -38,6 +39,12 @@ const UserSchema = Schema({
     google: {
         type: Boolean,
         default: false
+    },
+    phoneVerificationCode: {
+        type: String,
+    },
+    phoneVerificationCodeExpiresAt: {
+        type: Date,
     }
 },
 {

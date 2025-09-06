@@ -1,147 +1,142 @@
 const bcryptjs = require('bcryptjs');
 const { googleVerifyToken } = require('../helpers/google-auth.helper');
-const { generarJWT } = require('../helpers/jwt.helper');
+const { generateJWT } = require('../helpers/jwt.helper');
 const bcrypt = require('bcryptjs');
 const userModel = require("../models/user.model");
 const roleModel = require('../models/role.model');
-const eventParticipantModel = require('../models/event_participant.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper');
-const mongoose = require('mongoose'); // Importa mongoose  
+const { sendOtp } = require('../services/twilioService');
 
+// Login user
 const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-    const { email, password } = req.body
-
-    try {
-
-        const user = await userModel.findOne({ email, status: true }).populate('role').populate('event_participant').populate({
-            path: "event_participant",
-            populate: {
-              path: "participation_mode",
-              select: "name" // Solo trae el campo 'name'
-            }
-          })
-
-        if(!user) {
-            return res.status(400).send({
-                msg: 'Usuario/Password no son correctos - correo'
-            })
-        }
-
-        if(!user.status) {
-            console.log({user});
-            
-            return res.status(401).send({
-                msg: 'Usuario bloqueado - status'
-            })
-        }
-
-        const validPassword = bcryptjs.compareSync( password, user.password )
-        if(!validPassword) {
-            return res.status(400).send({
-                msg: 'Usuario/Password no son correctos - pass'
-            })
-        }
-
-        //generar el JWT
-        const jwt = await generarJWT(user)
-        console.log(`${user.name} se ha logueado correctamente!`);
-
-        return res.send({
-            msg: 'login correcto',
-            user,
-            jwt,
-            
-        })
-    } catch (error) {
-        console.log(error);
-        return res.status(400).send({
-            msg: 'Error en el login!',
-            error: error
-        })
+    // Check if user exists
+    const user = await userModel.findOne({ email }).populate('role', ['id', 'name']);
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-
-}
-
-const registerEvent = async (req, res) => {
-    const { name, email, password, image, event_participation_data } = req.body;
-    let { role } = req.body;
-    console.log('user role', role);
-
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        if (!role) {
-            const userRole = await roleModel.findOne({ name: 'USER_ROLE' });
-            if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
-            role = userRole._id;
-        }
-
-        const recordExist = await userModel.findOne({ email, status: true });
-        if (recordExist) throw { status: 400, message: 'El registro está duplicado' };
-
-        const data = new userModel({ name, email, password, role });
-        if (image) data.image = image;
-
-        // Encriptar la contraseña
-        const salt = bcrypt.genSaltSync();
-        data.password = bcrypt.hashSync(password, salt);
-
-        await data.save({ session });
-
-        // Guardar información de la participación del usuario
-        const participant = new eventParticipantModel(event_participation_data);
-        participant.creator = data._id;
-        participant.owner = data._id;
-        await participant.save({ session });
-
-        // Asignar participante al usuario y guardar
-        data.event_participant = participant._id;
-        await data.save({ session });
-
-        sendNotificationEmail(
-            'NUEVO USUARIO',
-            `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`
-        );
-
-        await session.commitTransaction();
-        session.endSession();
-
-        const newUser = await userModel.findById(data._id)
-            .populate('role')
-            .populate({
-                path: "event_participant",
-                populate: { path: "participation_mode", select: "name" }
-            });
-            
-        // Generar JWT
-        const jwt = await generarJWT(newUser);
-
-        res.status(201).send({
-            msg: 'Registro creado correctamente.',
-            user: newUser,
-            jwt,
-        });
-
-    } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
-
-        console.error('Error al registrar evento:', error);
-
-        // Usar el código de error si existe, de lo contrario, devolver 500
-        res.status(error.status || 500).send({
-            msg: error.message || 'Error al guardar el registro',
-        });
+    if (!user.status) {
+      return res.status(401).send({
+        message: 'Your Account is blocked'
+      })
     }
+
+    // Check password
+    const validPassword = bcryptjs.compareSync(password, user.password)
+    if (!validPassword) {
+      return res.status(400).send({
+        message: 'Invalid Credentials'
+      })
+    }
+
+    // Generate JWT token
+    const jwt = await generateJWT(user)
+
+    console.log('User logged in:', user.name);
+    
+    res.json({
+        message: 'Logged in successfully',
+        data: user,
+        jwt,
+    });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    res.status(500).json({ message: 'Failed to login' });
+  }
 };
 
+// Login with phone number
+const loginWithPhoneNumber = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    // Check if user exists
+    const user = await userModel.findOne({ phone, deleted: false });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (!user.status) {
+      return res.status(401).send({
+        message: 'Your Account is blocked'
+      });
+    }
+
+    // Fetch settings to get OTP expiration time
+    // const settings = await Settings.findOne({ status: true, deleted: false });
+    let otpExpirationSeconds = 300; // Default to 5 minutes (300 seconds)
+
+    // if (settings && typeof settings.otpExpirationTime === 'number' && settings.otpExpirationTime > 0) {
+    //     otpExpirationSeconds = settings.otpExpirationTime * 60; // Convert minutes to seconds
+    // }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + otpExpirationSeconds * 1000);
+
+    // Save OTP to user document
+    user.phoneVerificationCode = otp;
+    user.phoneVerificationCodeExpiresAt = otpExpiresAt;
+    await user.save();
+
+    // Send OTP via Twilio
+    await sendOtp(user.phone, otp);
+
+    res.json({
+      message: 'OTP sent successfully',
+    });
+  } catch (error) {
+    console.error('Error logging in with phone number:', error);
+    res.status(500).json({ message: 'Failed to login with phone number' });
+  }
+};
+
+// Verify phone number
+const verifyPhoneNumber = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    // Check if user exists
+    const user = await userModel.findOne({ phone }).populate('role', ['id', 'name']);
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Check if OTP is correct
+    if (user.phoneVerificationCode !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.phoneVerificationCodeExpiresAt) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    // Generate JWT token
+    const jwt = await generateJWT(user);
+
+    // Clear OTP fields
+    user.phoneVerificationCode = undefined;
+    user.phoneVerificationCodeExpiresAt = undefined;
+    await user.save();
+
+    res.json({
+      message: 'Logged in successfully',
+      data: user,
+      jwt,
+    });
+  } catch (error) {
+    console.error('Error verifying phone number:', error);
+    res.status(500).json({ message: 'Failed to verify phone number' });
+  }
+};
 
 const register = async (req, res) => {
 
-    const { name, email, password, image } = req.body
+    const { name, email, phone, password, image } = req.body
     let { role } = req.body;
 
     try {
@@ -151,11 +146,11 @@ const register = async (req, res) => {
             role = userRole._id;
         }
 
-        const recordExist = await userModel.findOne({ email, status: true });
+        const recordExist = await userModel.findOne({ phone, status: true });
         if (recordExist) throw { status: 400, message: 'El registro está duplicado' };
-    
-        const data = await new userModel({ name, email, password, role }).populate('role');
-    
+
+        const data = await new userModel({ name, email, phone, password, role }).populate('role', ['id', 'name']);
+
         if(image != '') {
             data.image = image
         }
@@ -168,7 +163,7 @@ const register = async (req, res) => {
         await data.save()
 
         //generar el JWT
-        const jwt = await generarJWT(data)
+        const jwt = await generateJWT(data)
         
         sendNotificationEmail('NUEVO USUARIO', 
         `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
@@ -230,7 +225,7 @@ const googleSignIn = async(req, res) => {
         })
     
         //generar el JWT
-        const jwt = await generarJWT(userUpdated)
+        const jwt = await generateJWT(userUpdated)
         console.log(`${userUpdated.name} se ha logueado correctamente con Google SignIn!`);
 
         res.send({
@@ -252,4 +247,4 @@ const googleSignIn = async(req, res) => {
 
 }
 
-module.exports = { login, register, googleSignIn, registerEvent }
+module.exports = { login, register, googleSignIn, loginWithPhoneNumber, verifyPhoneNumber }

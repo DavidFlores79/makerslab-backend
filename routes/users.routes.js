@@ -39,7 +39,7 @@ router.post('/',[
 ], postData);
 router.put('/:id', [
     validarJWT,
-    checkPermissions(['MODIFICAR']),
+    // checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
     // check('role').custom( validateRole ),

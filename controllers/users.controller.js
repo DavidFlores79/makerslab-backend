@@ -84,7 +84,7 @@ getDatum = async (req, res) => {
 
 postData = async (req, res) => {
 
-    const { name, email, password, image } = req.body
+    const { name, email, phone, password, image } = req.body
     let { role } = req.body;
     console.log('user role', role);
     
@@ -94,8 +94,8 @@ postData = async (req, res) => {
             if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
             role = userRole._id;
         }
-        
-        const data = await new User({ name, email, password, role }).populate('role');
+
+        const data = await new User({ name, email, phone, password, role }).populate('role', ['id', 'name']);
     
         if(image && image != '') {
             data.image = image
@@ -126,7 +126,7 @@ postData = async (req, res) => {
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, password, google, event_participant, ...resto } = req.body
+    const { _id, password, google, ...resto } = req.body
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -142,13 +142,8 @@ updateData = async (req, res) => {
         const data = await userModel.findByIdAndUpdate(id, resto, {
             new: true,
             session // Include the session
-        }).populate('role');
+        }).populate('role', ['id', 'name']);
 
-        // Guardar información de la participación del usuario
-        if (event_participant && event_participant._id) {
-            const eventParticipant = await eventParticipantModel.findByIdAndUpdate(event_participant._id, event_participant, { session });
-            data.event_participant = eventParticipant._id;
-        }
         await data.save({ session });
 
         await session.commitTransaction();
