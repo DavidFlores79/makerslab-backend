@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
+const rateLimiter = require('../middlewares/rateLimitterMiddleware');
 require('dotenv').config()
 
 const configurationRoutes = require("../routes/configuration.routes");
@@ -29,6 +31,7 @@ const eventParticipationModeRoutes = require("../routes/event_participation_mode
 const stateRoutes = require("../routes/states.routes");
 const fileUpload = require("express-fileupload");
 const emailRoutes = require("../routes/email.routes");
+const chatRoutes = require('../routes/chat.routes');
 
 class Server {
   constructor() {
@@ -49,8 +52,10 @@ class Server {
     //directorio public
     this.app.use(express.static("public"));
 
+    this.app.use(helmet());
     this.app.use(cors());
     this.app.use(express.json());
+    this.app.use(rateLimiter);
     this.app.use(
       bodyParser.json({
         limit: "20mb",
@@ -100,6 +105,7 @@ class Server {
     this.app.use("/api/event-participation-modes", eventParticipationModeRoutes);
     this.app.use("/api/states", stateRoutes);
     this.app.use("/api/email", emailRoutes);
+    this.app.use('/api/chat', chatRoutes);
 
     // catalogos
     this.app.use("/api/catalogs", catalogsRoutes);
