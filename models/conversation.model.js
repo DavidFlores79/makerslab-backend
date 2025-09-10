@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
-  content: { type: String, required: true },
+  content: { type: mongoose.Schema.Types.Mixed, required: true }, // Cambiado a Mixed para soportar texto o array de objetos
   createdAt: { type: Date, default: () => new Date() }
 }, { _id: false });
 

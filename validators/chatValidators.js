@@ -9,6 +9,7 @@ const startSchema = Joi.object({
 const messageSchema = Joi.object({
   conversationId: Joi.string().required(),
   content: Joi.string().min(1).max(2000).required(),
+  imageUrl: Joi.string().uri().optional(), // Añadido para permitir URLs de imágenes
 });
 
 module.exports = {
