@@ -3,12 +3,12 @@ const express = require('express');
 const { startConversation, sendMessage, getConversationHandler } = require('../controllers/chatController');
 const { startSchema, messageSchema } = require('../validators/chatValidators');
 const validate = require('../middlewares/validate');
-const { validarJWT } = require('../middlewares/validar-jwt.middleware');
+const { validateJWT } = require('../middlewares/validar-jwt.middleware');
 const router = express.Router();
 
 router.post('/start', [
     validate(startSchema),
-    validarJWT
+    validateJWT
 ], startConversation);
 router.post('/message', validate(messageSchema), sendMessage);
 router.get('/:id', getConversationHandler);

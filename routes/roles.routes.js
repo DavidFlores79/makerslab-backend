@@ -3,16 +3,16 @@ const { check } = require('express-validator')
 const { getData, postData, updateData, deleteData, showData } = require('../controllers/roles.controller');
 const { existRoleName, validateRoleById, validateModulesById, validateModuleById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
-const { validarJWT } = require('../middlewares/validar-jwt.middleware');
+const { validateJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
 const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
 router.get('/', [
-    checkPermissions(['VISUALIZAR'])
+    // checkPermissions(['VISUALIZAR'])
 ], getData);
 router.get('/:id', [
-    checkPermissions(['CREAR']),
+    // checkPermissions(['CREAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
 ], showData);
@@ -25,7 +25,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
-    checkPermissions(['MODIFICAR']),
+    // checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),
     check('name').custom( existRoleName ),
@@ -35,8 +35,8 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
-    checkPermissions(['ELIMINAR']),
-    validarJWT,
+    // checkPermissions(['ELIMINAR']),
+    validateJWT,
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateRoleById ),

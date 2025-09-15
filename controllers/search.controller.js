@@ -1,4 +1,3 @@
-const productModel = require('../models/product.model');
 const categoryModel = require('../models/category.model');
 const userModel = require('../models/user.model');
 const { SUPER_ROLE } = require('../config/constants');
@@ -7,8 +6,6 @@ const { ObjectId } = require('mongoose').Types;
 
 const colecciones = [
     'users',
-    'products',
-    'products-by-category',
     'categories',
     'roles',
 
@@ -93,84 +90,6 @@ const searchUsers = async (termino, res) => {
     }
 }
 
-const searchProducts = async (termino, res) => {
-
-    const isMongoId = ObjectId.isValid(termino)
-
-    if (isMongoId) {
-
-        const product = await productModel.findById(termino)
-        res.send({
-            results: (product) ? [product].length : []
-        })
-
-    } else {
-
-        const regex = new RegExp(termino, 'i')
-
-        const products = await productModel.find({
-            $or: [
-                { name: { $regex: regex } },
-                { description: { $regex: regex } },
-                // {category: {$regex:regex}},
-            ],
-            $nor: [{ status: false }], //no traer los eliminados
-        }).populate('category')
-
-        return res.send({
-            total: products.length,
-            results: products,
-
-        })
-    }
-}
-
-const searchProductsByCategory = async (termino, res) => {
-
-    const isMongoId = ObjectId.isValid(termino)
-
-    if (isMongoId) {
-
-        const product = await productModel.findById(termino)
-        res.send({
-            results: (product) ? [product].length : []
-        })
-
-    } else {
-
-        const regex = new RegExp(termino, 'i')
-
-        const categories = await categoryModel.find({ name: regex });
-
-        if (!categories.length) {
-
-            return res.status(400).json({
-
-                msg: `No hay resultados para ${termino}`
-
-            });
-        }
-
-        const products = await productModel.find({
-
-
-            $or: [...categories.map(category => ({
-
-                category: category._id
-
-            }))],
-
-            $and: [{ status: true }]
-
-        }).populate('category');
-
-        return res.send({
-            total: products.length,
-            results: products,
-
-        })
-    }
-}
 
 const searchCategories = async (termino, res) => {
 
@@ -204,8 +123,7 @@ const searchCategories = async (termino, res) => {
     }
 }
 
-searchData = async (req, res) => {
-
+const searchData = async (req, res) => {
 
     const { coleccion, termino } = req.params
 
@@ -219,10 +137,6 @@ searchData = async (req, res) => {
     switch (coleccion) {
         case 'users':
             return searchUsers(termino, res);
-        case 'products':
-            return searchProducts(termino, res)
-        case 'products-by-category':
-            return searchProductsByCategory(termino, res)
         case 'categories':
             return searchCategories(termino, res)
         case 'roles':

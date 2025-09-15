@@ -1,7 +1,6 @@
 const User = require('../models/user.model')
 const bcrypt = require('bcryptjs')
 const userModel = require('../models/user.model')
-const eventParticipantModel = require('./../models/event_participant.model')
 const roleModel = require('../models/role.model')
 const { sendNotificationEmail } = require('../helpers/email-notifications.helper')
 const { USER_ROLE, SUPER_ROLE } = require('../config/constants')

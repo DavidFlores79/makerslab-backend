@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../helpers/jwt.helper');
 const userModel = require('../models/user.model');
 
-const validarJWT = async (req, res, next) => {
+const validateJWT = async (req, res, next) => {
 
     try {
         if(!req.headers.authorization) {
@@ -51,4 +51,4 @@ function verifyGuestToken(req, res, next) {
   }
 
 
-module.exports = { validarJWT, verifyGuestToken }
+module.exports = { validateJWT, verifyGuestToken }

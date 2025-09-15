@@ -3,11 +3,8 @@ const fs = require('fs')
 const cloudinary = require('cloudinary').v2;
 const { uploadFiles } = require('../helpers/uploads.helper');
 const userModel = require('../models/user.model');
-const productModel = require('../models/product.model');
 const moduleModel = require('../models/module.model');
 const permissionModel = require('../models/permission.model');
-const summaryModel = require('../models/summary.model');
-const { options } = require('../routes/posters.routes');
 
 // Configuration 
 cloudinary.config({
@@ -62,14 +59,6 @@ const uploadImage = async (req, res) => {
       if (!modelo) {
         return res.status(404).send({ msg: `El usuario con id: ${id} no existe en la BD.` })
       }
-      break;
-    // console.log(user);
-    case 'products':
-      modelo = await productModel.findById(id)
-      if (!modelo) {
-        return res.status(404).send({ msg: `El producto con id: ${id} no existe en la BD.` })
-      }
-      // console.log(product);
       break;
     case 'modules':
       modelo = await moduleModel.findById(id)
@@ -148,14 +137,6 @@ const uploadImageCloudinary = async (req, res) => {
         return res.status(404).send({ msg: `El usuario con id: ${id} no existe en la BD.` })
       }
       break;
-    // console.log(user);
-    case 'products':
-      modelo = await productModel.findById(id)
-      if (!modelo) {
-        return res.status(404).send({ msg: `El producto con id: ${id} no existe en la BD.` })
-      }
-      // console.log(product);
-      break;
     case 'modules':
       modelo = await moduleModel.findById(id)
       if (!modelo) {
@@ -174,13 +155,6 @@ const uploadImageCloudinary = async (req, res) => {
       modelo = await permissionModel.findById(id)
       if (!modelo) {
         return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
-      }
-      // console.log(product);
-      break;
-    case 'summaries':
-      modelo = await summaryModel.findById(id)
-      if (!modelo) {
-        return res.status(404).send({ msg: `El resumen con id: ${id} no existe en la BD.` })
       }
       // console.log(product);
       break;
@@ -301,14 +275,6 @@ const showImage = async (req, res) => {
         return res.status(404).send({ msg: `El usuario con id: ${id} no existe en la BD.` })
       }
       break;
-    // console.log(user);
-    case 'products':
-      modelo = await productModel.findById(id)
-      if (!modelo) {
-        return res.status(404).send({ msg: `El producto con id: ${id} no existe en la BD.` })
-      }
-      // console.log(product);
-      break;
     case 'modules':
       modelo = await moduleModel.findById(id)
       if (!modelo) {
@@ -317,13 +283,6 @@ const showImage = async (req, res) => {
       // console.log(product);
       break;
     case 'permissions':
-      modelo = await permissionModel.findById(id)
-      if (!modelo) {
-        return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })
-      }
-      // console.log(product);
-      break;
-    case 'posters':
       modelo = await permissionModel.findById(id)
       if (!modelo) {
         return res.status(404).send({ msg: `El módulo con id: ${id} no existe en la BD.` })

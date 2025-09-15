@@ -1,11 +1,11 @@
 const { Router } = require('express');
-const { validarJWT } = require('../middlewares/validar-jwt.middleware');
+const { validateJWT } = require('../middlewares/validar-jwt.middleware');
 const { getConfigurations, updateConfigurations } = require('../controllers/configuration.controller');
 const router = Router()
 
 router.get('/', getConfigurations);
 router.put('/', [
-    validarJWT
+    validateJWT
 ], updateConfigurations);
 
 module.exports = router

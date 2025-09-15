@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { verifyGuestToken, validarJWT } = require('../middlewares/validar-jwt.middleware');
+const { verifyGuestToken, validateJWT } = require('../middlewares/validar-jwt.middleware');
 const { sendContactEmail } = require('../controllers/email.controller');
 const router = Router()
 
@@ -8,7 +8,7 @@ router.post('/',[
 ], sendContactEmail);
 
 router.post('/notification',[
-    validarJWT,
+    validateJWT,
 ], sendInformacionEmail);
 
 module.exports = router

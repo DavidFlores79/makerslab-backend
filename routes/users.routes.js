@@ -3,27 +3,27 @@ const { check } = require('express-validator')
 const { getData, postData, updateData, deleteData, getRoles, deleteUsersExceptFirstThree, getDatum } = require('../controllers/users.controller');
 const { validateRole, validateEmail, validateUserById, validateRoleById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
-const { validarJWT } = require('../middlewares/validar-jwt.middleware');
+const { validateJWT } = require('../middlewares/validar-jwt.middleware');
 const { Validator } = require('../middlewares/validator.middleware');
 const { checkPermissions } = require('../middlewares/permission-validator.middleware');
 const router = Router()
 
 router.delete('/delete-all-users', [
-    validarJWT,
+    validateJWT,
     checkPermissions(['ELIMINAR']),
     checkRoleAuth(['SUPER_ROLE']),
 ],deleteUsersExceptFirstThree);
 
 router.get('/', [
-    validarJWT,
+    validateJWT,
     checkPermissions(['VISUALIZAR'])
 ], getData);
 router.get('/:id', [
-    validarJWT
+    validateJWT
 ], getDatum);
 router.get('/roles', getRoles);
 router.post('/',[
-    validarJWT,
+    validateJWT,
     checkPermissions(['CREAR']),
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('email', 'El email es obligatorio.').not().isEmpty(),
@@ -38,7 +38,7 @@ router.post('/',[
     Validator
 ], postData);
 router.put('/:id', [
-    validarJWT,
+    validateJWT,
     // checkPermissions(['MODIFICAR']),
     check('id', 'No es un id válido.').isMongoId(),
     check('id').custom( validateUserById ),
@@ -50,7 +50,7 @@ router.put('/:id', [
 ], updateData);
 
 router.delete('/:id', [
-    validarJWT,
+    validateJWT,
     checkPermissions(['ELIMINAR']),
     checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
     check('id', 'No es un id válido.').isMongoId(),

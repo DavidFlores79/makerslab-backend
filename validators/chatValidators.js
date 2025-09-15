@@ -2,6 +2,7 @@
 const Joi = require("joi");
 
 const startSchema = Joi.object({
+  module: Joi.string().required(),
   conversationId: Joi.string().optional(),
   systemPrompt: Joi.string().optional(),
 });

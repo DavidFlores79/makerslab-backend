@@ -1,374 +1,263 @@
-const stateModel = require('../models/state.model');
-const occupationModel = require('../models/occupation.model');
-const eventParticipationModeModel = require('../models/event_participation_modes.model');
-const eventParticipantModel = require('../models/event_participant.model');
-const paymentMethodModel = require('../models/payment_method.model');
-const paymentStatusModel = require('../models/payment_status.model');
-const paymentModel = require('../models/payment.model');
-const summaryModel = require('../models/summary.model');
-const summaryStatusModel = require('../models/summary_status.model');
-const userModel = require('../models/user.model');
-const roleModel = require('../models/role.model');
-const categoryModel = require('../models/category.model');
-const { verifyToken } = require('../helpers/jwt.helper');
-const { SUPER_ROLE, ADMIN_ROLE } = require('../config/constants');
+const stateModel = require("../models/state.model");
+const paymentMethodModel = require("../models/payment_method.model");
+const paymentStatusModel = require("../models/payment_status.model");
+const paymentModel = require("../models/payment.model");
+const userModel = require("../models/user.model");
+const roleModel = require("../models/role.model");
+const categoryModel = require("../models/category.model");
+const { verifyToken } = require("../helpers/jwt.helper");
+const { SUPER_ROLE, ADMIN_ROLE } = require("../config/constants");
 
+const getStates = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-getStates = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+    // Query con filtros
+    const query = {
+      deleted: false,
+    };
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-        };
+    // Consulta para documentos
+    const data = await stateModel
+      .find(query)
+      .limit(pageSize)
+      .skip(skip)
+      .populate("creator");
 
-        // Consulta para documentos
-        const data = await stateModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
+    // Consulta para total de documentos
+    const totalItems = await stateModel.countDocuments(query);
 
-        // Consulta para total de documentos
-        const totalItems = await stateModel.countDocuments(query);
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener Estados" });
+  }
+};
 
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener Estados' });
-    }
-}
+const getPaymentMethods = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-getOcuppations = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+    // Query con filtros
+    const query = {
+      deleted: false,
+      status: true,
+    };
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
+    // Consulta para documentos
+    const data = await paymentMethodModel
+      .find(query)
+      .limit(pageSize)
+      .skip(skip)
+      .populate("creator");
 
-        // Consulta para documentos
-        const data = await occupationModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
+    // Consulta para total de documentos
+    const totalItems = await paymentMethodModel.countDocuments(query);
 
-        // Consulta para total de documentos
-        const totalItems = await occupationModel.countDocuments(query);
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener los registros" });
+  }
+};
 
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener Ocupaciones' });
-    }
-}
+const getPaymentStatus = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-getEventParticipationModes = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+    // Query con filtros
+    const query = {
+      deleted: false,
+      status: true,
+    };
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
+    // Consulta para documentos
+    const data = await paymentStatusModel
+      .find(query)
+      .limit(pageSize)
+      .skip(skip)
+      .populate("creator");
 
-        // Consulta para documentos
-        const data = await eventParticipationModeModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
+    // Consulta para total de documentos
+    const totalItems = await paymentStatusModel.countDocuments(query);
 
-        // Consulta para total de documentos
-        const totalItems = await eventParticipationModeModel.countDocuments(query);
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener los registros" });
+  }
+};
 
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener Modos de Participación' });
-    }
-}
+const getUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-getPaymentMethods = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+    // Query con filtros
+    const query = {
+      deleted: false,
+    };
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
+    // Consulta para documentos
+    const data = await userModel
+      .find(query)
+      .limit(pageSize)
+      .skip(skip)
+      .populate("event_participant")
+      .populate("role");
 
-        // Consulta para documentos
-        const data = await paymentMethodModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
+    // Filtra en memoria
+    dataFiltered = data.filter(
+      (user) => user.role?.name !== SUPER_ROLE && user.role?.name !== ADMIN_ROLE
+    );
+    // Consulta para total de documentos
+    const totalItems = dataFiltered.lenght;
 
-        // Consulta para total de documentos
-        const totalItems = await paymentMethodModel.countDocuments(query);
-
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener los registros' });
-    }
-}
-
-getPaymentStatus = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
-
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
-
-        // Consulta para documentos
-        const data = await paymentStatusModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
-
-        // Consulta para total de documentos
-        const totalItems = await paymentStatusModel.countDocuments(query);
-
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener los registros' });
-    }
-}
-
-getSummaryStatuses = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
-
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
-
-        // Consulta para documentos
-        const data = await summaryStatusModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('creator')
-
-        // Consulta para total de documentos
-        const totalItems = await summaryStatusModel.countDocuments(query);
-
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener los registros' });
-    }
-}
-
-getUsers = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
-
-        // Query con filtros
-        const query = { 
-            deleted: false,
-        };
-
-        // Consulta para documentos
-        const data = await userModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
-            .populate('event_participant')
-            .populate('role');
-
-        // Filtra en memoria
-        dataFiltered = data.filter(user => user.role?.name !== SUPER_ROLE && user.role?.name !== ADMIN_ROLE);
-        // Consulta para total de documentos
-        const totalItems = dataFiltered.lenght;
-
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: dataFiltered
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener registros' });
-    }
-}
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: dataFiltered,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener registros" });
+  }
+};
 
 const getRoles = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            status: true,
-        };
+    // Query con filtros
+    const query = {
+      deleted: false,
+      status: true,
+    };
 
-        // Consulta para documentos
-        const data = await roleModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
- 
-        // Filtra en memoria
-        dataFiltered = data.filter(user => user.role?.name !== SUPER_ROLE);
-        // Consulta para total de documentos
-        const totalItems = dataFiltered.lenght;
+    // Consulta para documentos
+    const data = await roleModel.find(query).limit(pageSize).skip(skip);
 
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: dataFiltered
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener registros' });
-    }
-}
+    // Filtra en memoria
+    dataFiltered = data.filter((user) => user.role?.name !== SUPER_ROLE);
+    // Consulta para total de documentos
+    const totalItems = dataFiltered.lenght;
+
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: dataFiltered,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener registros" });
+  }
+};
 
 const getCategories = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
-        const skip = (page - 1) * pageSize;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.page_size) || 10;
+    const skip = (page - 1) * pageSize;
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-        };
+    // Query con filtros
+    const query = {
+      deleted: false,
+    };
 
-        // Consulta para documentos
-        const data = await categoryModel.find(query)
-            .limit(pageSize)
-            .skip(skip)
- 
-        // Consulta para total de documentos
-        const totalItems = data.lenght;
+    // Consulta para documentos
+    const data = await categoryModel.find(query).limit(pageSize).skip(skip);
 
-        res.send({
-            page: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            data: data
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener registros' });
-    }
-}
+    // Consulta para total de documentos
+    const totalItems = data.lenght;
 
-getUserDashboard = async (req, res) => {
+    res.send({
+      page: page,
+      pageSize: pageSize,
+      totalItems: totalItems,
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener registros" });
+  }
+};
 
-    const { id } = req.params
-    
-    try {
+const getUserDashboard = async (req, res) => {
+  const { id } = req.params;
 
-        // Query con filtros
-        const query = { 
-            deleted: false,
-            owner: id
-        };
+  try {
+    // Query con filtros
+    const query = {
+      deleted: false,
+      owner: id,
+    };
 
-        // Consulta para documentos
-        const data = await paymentModel.find(query);
+    // Consulta para documentos
+    const data = await paymentModel.find(query);
 
-        // Consulta para total de resumenes
-        const summary = await summaryModel.findOne(query).populate('document_status');
+    const totalAmount = data.reduce(
+      (sum, payment) => sum + (payment.amount || 0),
+      0
+    );
 
-        const totalAmount = data.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+    res.send({
+      payments: {
+        total: data.length,
+        totalAmount: totalAmount,
+      },
+    });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener los registros" });
+  }
+};
 
-        res.send({
-            payments: {
-                total: data.length,
-                totalAmount: totalAmount,
-            },
-            summary: {
-                exist: summary !== null,
-                percentage: summary ? summary.document_status.name.includes('CARGADO') ? 50 : 100 : 0,
-                data: summary,
-            }
+const getUserInfo = async (req, res) => {
+  const { id } = req.params;
 
-        });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener los registros' });
-    }
-}
+  try {
+    // Consulta para documentos
+    const data = await userModel.findById(id).populate("role");
 
-getUserInfo = async (req, res) => {
-    const { id } = req.params
-    
-    try {
-        // Consulta para documentos
-        const data = await userModel.findById(id).populate('role');
+    const eventInfo = await eventParticipantModel
+      .findById(data.event_participant)
+      .populate("occupation", ["name"])
+      .populate("participation_mode", ["name"])
+      .populate("state", ["name"]);
+    data.event_participant = eventInfo;
 
-        const eventInfo = await eventParticipantModel.findById(data.event_participant)
-                    .populate('occupation', ['name'])
-                    .populate('participation_mode', ['name'])
-                    .populate('state', ['name']);
-        data.event_participant = eventInfo;
+    res.send({ data: data });
+  } catch (error) {
+    res.status(500).send({ msg: "Error al obtener los registros" });
+  }
+};
 
-        res.send({ data: data });
-        
-    } catch (error) {
-        res.status(500).send({ msg: 'Error al obtener los registros' });
-    }
-}
-
-
-
-module.exports = { getUsers, getStates, getOcuppations, getEventParticipationModes, getPaymentMethods, getPaymentStatus, getUserDashboard, getUserInfo, getSummaryStatuses, getRoles, getCategories }
+module.exports = {
+  getUsers,
+  getStates,
+  getRoles,
+  getCategories,
+  getPaymentMethods,
+  getPaymentStatus,
+  getUserDashboard,
+  getUserInfo,
+};

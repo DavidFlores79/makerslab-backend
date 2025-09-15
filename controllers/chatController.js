@@ -1,7 +1,12 @@
 // src/controllers/chatController.js
 const Conversation = require("../models/conversation.model");
 const { v4: uuidv4 } = require("uuid");
-const { getChatCompletion } = require("../services/openAIService");
+const {
+  getChatCompletion,
+  getChatResponses,
+} = require("../services/openAIService");
+const { getChatResponse } = require("../services/openAIChatService");
+const { getModuleInstructions } = require("../config/constants");
 
 const MAX_MESSAGES = Number(process.env.CONVO_MAX_MESSAGES || 30);
 
@@ -13,21 +18,23 @@ function trimMessages(messages) {
 
 async function startConversation(req, res, next) {
   try {
-    const { conversationId, systemPrompt } = req.body;
-    const id = conversationId || uuidv4();
+    const { module } = req.body;
+    const userId = req.user?.id;
 
-    const exists = await Conversation.findOne({ conversationId: id });
-    if (exists) {
-      return res.json({ conversationId: id });
+    // Buscar si ya existe conversación de este usuario con ese módulo
+    let conversation = await Conversation.findOne({ userId, module });
+
+    if (!conversation) {
+      conversation = new Conversation({
+        conversationId: uuidv4(),
+        userId,
+        messages: [],
+        module,
+      });
+      await conversation.save();
     }
 
-    const doc = new Conversation({
-      conversationId: id,
-      userId: req.user?.id,
-      messages: systemPrompt ? [{ role: "system", content: systemPrompt }] : [],
-    });
-    await doc.save();
-    res.json({ conversationId: id });
+    res.json({ conversationId: conversation.conversationId });
   } catch (err) {
     next(err);
   }
@@ -36,36 +43,49 @@ async function startConversation(req, res, next) {
 async function sendMessage(req, res, next) {
   try {
     const { conversationId, content, imageUrl } = req.body;
-    let convo = await Conversation.findOne({ conversationId });
-    if (!convo) {
+    let chatConversation = await Conversation.findOne({ conversationId });
+    if (!chatConversation) {
       // create new conversation if not exists
-      convo = new Conversation({ conversationId, userId: req.user?.id, messages: [] });
+      chatConversation = new Conversation({
+        conversationId,
+        userId: req.user?.id,
+        messages: [],
+      });
     }
 
-    // Prepare user message content for OpenAI
-    let userMessageContent;
+    // Normaliza: siempre guardamos content como array de bloques
+    const userContent = [];
+    if (content && content !== "") {
+      userContent.push({ type: "input_text", text: String(content) });
+    }
     if (imageUrl) {
-      userMessageContent = [
-        { type: "text", text: content },
-        { type: "image_url", image_url: { url: imageUrl } },
-      ];
-    } else {
-      userMessageContent = content;
+      // <-- IMPORTANTE: image_url debe ser STRING o data-uri string (no { url: ... })
+      // puede ser: "https://..." o "data:image/png;base64,AAAA..."
+      userContent.push({ type: "input_image", image_url: String(imageUrl) });
+    }
+    // si no hay texto ni imagen, abortar
+    if (userContent.length === 0) {
+      return res.status(400).json({ error: "Empty message" });
     }
 
-    // append user message
-    convo.messages.push({ role: "user", content: userMessageContent });
-    convo.messages = trimMessages(convo.messages);
-    await convo.save();
+    // Append usuario
+    chatConversation.messages.push({ role: "user", content: userContent });
+    chatConversation.messages = trimMessages(chatConversation.messages); // tu lógica
+    await chatConversation.save();
 
     // prepare messages for OpenAI (convert to expected shape)
-    const messages = convo.messages.map((m) => ({
+    const messages = chatConversation.messages.map((m) => ({
       role: m.role,
       content: m.content,
     }));
 
+    const moduleInstructions = getModuleInstructions(
+      chatConversation.module || "default"
+    );
+
     // call OpenAI
-    const resp = await getChatCompletion(
+    const resp = await getChatResponses(
+      moduleInstructions,
       messages,
       process.env.OPENAI_MODEL || "gpt-4o-mini",
       4096
@@ -74,9 +94,12 @@ async function sendMessage(req, res, next) {
     const assistantText = resp.text ?? "";
 
     // save assistant message
-    convo.messages.push({ role: "assistant", content: assistantText });
-    convo.messages = trimMessages(convo.messages);
-    await convo.save();
+    chatConversation.messages.push({
+      role: "assistant",
+      content: assistantText,
+    });
+    chatConversation.messages = trimMessages(chatConversation.messages);
+    await chatConversation.save();
 
     res.json({ assistant: assistantText, raw: resp.raw ?? null });
   } catch (err) {
@@ -91,14 +114,20 @@ async function getConversationHandler(req, res, next) {
 
     if (userId) {
       // Buscar por userId
-      const convo = await Conversation.findOne({ userId }).sort({ updatedAt: -1 });
+      const convo = await Conversation.findOne({ userId }).sort({
+        updatedAt: -1,
+      });
       if (!convo) return res.status(404).json({ error: "Not found" });
-      return res.json({ conversationId: convo.conversationId, messages: convo.messages });
+      return res.json({
+        module: convo.module,
+        conversationId: convo.conversationId,
+        messages: convo.messages,
+      });
     }
 
     const convo = await Conversation.findOne({ conversationId: id });
     if (!convo) return res.status(404).json({ error: "Not found" });
-    res.json({ conversationId: id, messages: convo.messages });
+    res.json({ module: convo.module, conversationId: id, messages: convo.messages });
   } catch (err) {
     next(err);
   }
