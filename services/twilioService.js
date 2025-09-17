@@ -14,7 +14,7 @@ const sendOtp = async (phoneNumber, otp) => {
 
   try {
     await client.messages.create({
-      body: `Your OTP for login is: ${otp}`,
+      body: `Your One Time Password (OTP) for login is: ${otp}`,
       from: twilioPhoneNumber,
       to: phoneNumber,
     });
