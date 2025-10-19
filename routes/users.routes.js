@@ -16,7 +16,7 @@ router.delete('/delete-all-users', [
 
 router.get('/', [
     validateJWT,
-    checkPermissions(['VISUALIZAR'])
+    // checkPermissions(['VISUALIZAR'])
 ], getData);
 router.get('/:id', [
     validateJWT

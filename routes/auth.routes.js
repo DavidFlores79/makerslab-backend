@@ -15,7 +15,7 @@ router.post('/login',[
     Validator
 ], login);
 
-router.post('/register',[
+router.post('/signup',[
     check('name', 'El nombre es obligatorio.').not().isEmpty(),
     check('phone', 'El teléfono es obligatorio.').not().isEmpty(),
     check('phone', 'No es un teléfono válido.').isMobilePhone('any'),

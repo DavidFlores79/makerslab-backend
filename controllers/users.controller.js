@@ -35,7 +35,6 @@ getData = async (req, res) => {
         const data = await userModel.find(query)
             .limit(pageSize)
             .skip(skip)
-            .populate('event_participant')
             .populate('role');
 
         // Consulta para total de documentos
@@ -63,14 +62,7 @@ getDatum = async (req, res) => {
             'role.name': { $ne: SUPER_ROLE }
         };
 
-        const datum = await userModel.findById(id).populate({
-            path: "event_participant",
-            populate: { 
-                path: "participation_mode", select: "name",
-                path: "owner", select: "name",
-                path: "creator", select: "name",
-            }
-        }).populate('role');
+        const datum = await userModel.findById(id).populate('role');
 
         res.send({
             data: datum
@@ -90,7 +82,7 @@ postData = async (req, res) => {
     try {
         if (!role) {
             const userRole = await roleModel.findOne({ name: USER_ROLE, status: true });
-            if (!userRole) throw { status: 404, message: 'No se encontró el rol para dar de alta al usuario' };
+            if (!userRole) throw { status: 404, message: 'Role not found' };
             role = userRole._id;
         }
 
@@ -107,18 +99,17 @@ postData = async (req, res) => {
         //guardar en la BD
         await data.save()
         
-        sendNotificationEmail('NUEVO USUARIO', 
-        `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`);
+        sendNotificationEmail('New User Created',
+        `User ${data.name} has been created with role ${data.role.name}.`);
 
         res.status(201).send({
-            msg: 'Registro creado correctamente.',
+            msg: 'Record created successfully.',
             data
         });
         
     } catch (error) {
-        console.error('Error al registrar evento:', error);
         res.status(error.status || 500).send({
-            msg: error.message || 'Error al guardar el registro',
+            msg: error.message || 'Error saving record',
         });
     }
 }

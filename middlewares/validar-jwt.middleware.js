@@ -16,7 +16,7 @@ const validateJWT = async (req, res, next) => {
             return res.status(401).send({ msg: 'Su sesión ha caducado 😫**' })
         }
 
-        usuario = await userModel.findById(tokenData._id)
+        usuario = await userModel.findById(tokenData._id || tokenData.id)
         if(!usuario.status || usuario.deleted || !usuario) {
             res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
             console.log('Usuario Bloqueado. Sin Permisos');

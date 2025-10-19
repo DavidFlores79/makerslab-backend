@@ -21,7 +21,8 @@ const PermissionSchema = Schema({
 })
 
 PermissionSchema.methods.toJSON = function () {
-    const { __v, deleted, ...data } = this.toObject()
+    const { __v, _id, deleted, ...data } = this.toObject()
+    data.id = _id
     return data
 }
 

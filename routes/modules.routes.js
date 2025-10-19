@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { getData, postData, updateData, deleteData } = require('../controllers/modules.controller');
+const { getData, postData, updateData, deleteData, getDatum } = require('../controllers/modules.controller');
 const { validateRoute, validateModuleById, validatePermissionById } = require('../helpers/db_validators.helper');
 const { checkRoleAuth } = require('../middlewares/role-validator.middleware');
 const { validateJWT } = require('../middlewares/validar-jwt.middleware');
@@ -9,34 +9,33 @@ const { checkPermissions } = require('../middlewares/permission-validator.middle
 const router = Router()
 
 router.get('/', [
-    checkPermissions(['VISUALIZAR'])
+    // checkPermissions(['VISUALIZAR'])
+    validateJWT,
 ], getData);
+router.get('/:id', [
+    check('id', 'Invalid ID.').isMongoId(),
+    check('id').custom( validateModuleById ),
+], getDatum);
 router.post('/',[
-    checkPermissions(['CREAR']),
-    check('name', 'El nombre es obligatorio.').not().isEmpty(),
-    check('route', 'La Ruta es obligatoria.').not().isEmpty(),
-    //Validacion personalizada que usa el modelo roles
-    check('route').custom( validateRoute ),
-    // check('permissions.*', 'No es un id válido.').isMongoId(),
-    // check('permissions.*').custom( validatePermissionById ),
+    // checkPermissions(['CREAR']),
+    check('title', 'Title is required.').not().isEmpty(),
+    check('route', 'Route is required.').not().isEmpty(),
 
     Validator
 ], postData);
 router.put('/:id', [
-    checkPermissions(['MODIFICAR']),
-    check('id', 'No es un id válido.').isMongoId(),
+    // checkPermissions(['MODIFICAR']),
+    check('id', 'Invalid ID.').isMongoId(),
     check('id').custom( validateModuleById ),
     check('route').custom( validateRoute ),
-    // check('permissions.*', 'No es un id válido.').isMongoId(),
-    // check('permissions.*').custom( validatePermissionById ),
     Validator
 ], updateData);
 
 router.delete('/:id', [
-    checkPermissions(['ELIMINAR']),
+    // checkPermissions(['ELIMINAR']),
     validateJWT,
-    checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
-    check('id', 'No es un id válido.').isMongoId(),
+    // checkRoleAuth(['SUPER_ROLE', 'ADMIN_ROLE']),
+    check('id', 'Invalid ID.').isMongoId(),
     check('id').custom( validateModuleById ),
 ], deleteData);
 

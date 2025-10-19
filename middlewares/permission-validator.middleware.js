@@ -19,7 +19,7 @@ const checkPermissions = ( permissions ) => async (req, res, next) => {
         if(!tokenData) {
             return res.status(401).send({msg: 'Su sesión ha caducado'}) //Si el token no es valido debera ser redirigido a Home
         }
-        const userData = await userModel.findById(tokenData._id);
+        const userData = await userModel.findById(tokenData._id || tokenData.id).populate('role');
 
         const { _id } = req.body;
         console.log('USERID', _id);

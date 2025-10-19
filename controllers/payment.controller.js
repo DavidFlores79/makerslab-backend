@@ -16,21 +16,10 @@ getData = async (req, res) => {
 
         const search = req.query.search?.trim() || '';
         
-        //extraer usuario logueado del token
-        const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
-
-        // Query con filtros
-        const query = { deleted: false };
-        if (tokenData.role.name == USER_ROLE) {
-            query.owner = tokenData._id
-        }
-
-        // Si hay un término de búsqueda, agregar condiciones
+        query.owner = req.user.id;
         if (search) {
             const regex = new RegExp(search, 'i');
             
-            // Buscar usuarios cuyo nombre coincida con el término de búsqueda
             const matchingOwners = await userModel.find({ name: regex }, '_id');
             const ownerIds = matchingOwners.map(user => user._id);
 
@@ -74,31 +63,16 @@ postData = async (req, res) => {
         if (image != '') {
             payment.image = image
         }
-        //extraer usuario logueado del token
-        const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
-        const user = await userModel.findById(tokenData._id).populate('role');        
-        
-        // Query con filtros
-        if (user.role.name == USER_ROLE) {
-            const query = { deleted: false, owner: user._id };
-            const totalItems = await paymentModel.countDocuments(query);
-            const config = await configurationModel.findOne();
-
-            if (totalItems >= config.userLimits.maxPayments) {
-                return res.status(400).send({ msg: maximumAllowed(config.userLimits.maxPayments) })
-            }
-        }
 
         const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
         if (!paymentStatus) {
             return res.status(400).send({ msg: 'Estatus inicial no definido' });
         }        
         //id del usuario logueado
-        payment.creator = user._id
+        payment.creator = req.user.id
         //console.log(product);
-        if (user.role.name == USER_ROLE) {
-            payment.owner = user._id
+        if (req.user.role.name == USER_ROLE) {
+            payment.owner = req.user.id
         }
         payment.payment_status = paymentStatus._id
 
@@ -132,12 +106,8 @@ updateData = async (req, res) => {
     const { _id, ...resto } = req.body
 
     try {
-        //extraer usuario logueado del token
-        const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
-        const user = await userModel.findById(tokenData._id).populate('role');
         
-        if (user.role.name == USER_ROLE) {
+        if (req.user.role.name == USER_ROLE) {
             const paymentStatus = await paymentStatusModel.findOne({ name: PENDING_PAYMENT });
             if (!paymentStatus) {
                 return res.status(400).send({ msg: 'Estatus inicial no definido' });

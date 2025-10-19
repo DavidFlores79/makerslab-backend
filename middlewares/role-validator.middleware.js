@@ -14,7 +14,7 @@ const checkRoleAuth = ( roles ) => async (req, res, next) => {
         if(!tokenData) {
             return res.status(401).send({msg: 'Su sesión ha caducado'})
         }
-        const userData = await userModel.findById(tokenData._id).populate('role')
+        const userData = await userModel.findById(tokenData._id || tokenData.id).populate('role')
         
         // console.log('roles', roles);
         // console.log('role de usuario', userData.role);

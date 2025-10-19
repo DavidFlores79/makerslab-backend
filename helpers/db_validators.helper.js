@@ -7,7 +7,6 @@ const permissionModel = require('../models/permission.model');
 const modulePermisionRoleModel = require('../models/module_permission_role.model');
 const paymentMethodModel = require('../models/payment_method.model');
 const paymentModel = require('../models/payment.model');
-const stateModel = require('../models/state.model');
 
 const validateRole = async (role = '') => {
     console.log(role);
@@ -234,14 +233,6 @@ const validatePaymentStatusById = async ( id ) => {
 
 }
 
-/** Event Paticipant */
-const validateStateById = async ( id ) => {
-    const dataExist = await stateModel.findById(id)
-    if(!dataExist) {
-        throw new Error(`El registro con el id: ${ id } no existe en BD.`)
-    }
-}
-
 module.exports = { 
     validateRole, 
     validateEmail, 
@@ -260,6 +251,5 @@ module.exports = {
     existPaymentMethodName,
     validatePaymentMethodById,
     validatePaymentById,
-    validateStateById,
     validatePaymentStatusById
 }

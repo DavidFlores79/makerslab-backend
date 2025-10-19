@@ -1,10 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
-const rateLimiter = require('../middlewares/rateLimitterMiddleware');
-require('dotenv').config()
+const rateLimiter = require("../middlewares/rateLimitterMiddleware");
+const slowDown = require("express-slow-down");
+const mongoSanitize = require("express-mongo-sanitize");
+const xssClean = require("xss-clean");
+const hpp = require("hpp");
+const fs = require('fs');
+const path = require('path');
+
+require("dotenv").config();
 
 const configurationRoutes = require("../routes/configuration.routes");
 const catalogsRoutes = require("../routes/catalogs.routes");
@@ -19,16 +28,29 @@ const modulePermissionRoleRoutes = require("../routes/module_permission_role.rou
 const paymentMethodRoutes = require("../routes/payment_methods.routes");
 const paymentRoutes = require("../routes/payments.routes");
 const paymentStatusRoutes = require("../routes/payment_statuses.routes");
-const stateRoutes = require("../routes/states.routes");
 const fileUpload = require("express-fileupload");
 const emailRoutes = require("../routes/email.routes");
-const chatRoutes = require('../routes/chat.routes');
+const chatRoutes = require("../routes/chat.routes");
+
+// Ruta absoluta al directorio de logs
+const logDirectory = path.join(__dirname, '../logs');
+
+// Crear carpeta si no existe
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory, { recursive: true });
+}
+
+// Crear stream para guardar los logs
+const accessLogStream = fs.createWriteStream(
+  path.join(logDirectory, 'access.log'),
+  { flags: 'a' } // 'a' = append
+);
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
-
+    
     //conectar a DB
     this.conectarDB();
 
@@ -41,29 +63,44 @@ class Server {
 
   middlewares() {
     //directorio public
-    this.app.use(express.static("public"));
-
+    this.app.use(express.static("public"))
     this.app.use(helmet());
+    this.app.use(compression());
+    // this.app.use(
+    //   morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
+    // );
+    this.app.use(
+      morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", { stream: accessLogStream })
+    );
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use(rateLimiter);
-    this.app.use(
-      bodyParser.json({
-        limit: "20mb",
-      })
-    );
-    this.app.use(
-      bodyParser.urlencoded({
-        limit: "20mb",
-        extended: true,
-      })
-    );
+
+    // Slow-down para penalizar ráfagas
+    const speed = slowDown({
+      windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60000),
+      delayAfter: Math.max(
+        1,
+        Math.floor(Number(process.env.RATE_LIMIT_MAX || 30) * 0.6)
+      ), // empieza a penalizar al 60% de max
+      delayMs: () => 500,
+    });
+    this.app.use(speed);
+
+    // body parser con límites (usa express.json en lugar de duplicar bodyParser)
+    this.app.use(express.json({ limit: "20mb" }));
+    this.app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+
+    // sanitizers: evita Mongo query injection, XSS y param pollution
+    this.app.use(mongoSanitize());
+    this.app.use(xssClean());
+    this.app.use(hpp());
 
     this.app.use(
       fileUpload({
         useTempFiles: true,
         tempFileDir: "/tmp/",
-        createParentPath: true
+        createParentPath: true,
       })
     );
   }
@@ -85,9 +122,8 @@ class Server {
     this.app.use("/api/payment-methods", paymentMethodRoutes);
     this.app.use("/api/payments", paymentRoutes);
     this.app.use("/api/payment-statuses", paymentStatusRoutes);
-    this.app.use("/api/states", stateRoutes);
     this.app.use("/api/email", emailRoutes);
-    this.app.use('/api/chat', chatRoutes);
+    this.app.use("/api/chat", chatRoutes);
 
     // catalogos
     this.app.use("/api/catalogs", catalogsRoutes);

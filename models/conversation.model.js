@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
+  
   role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
   content: { type: mongoose.Schema.Types.Mixed, required: true }, 
   createdAt: { type: Date, default: () => new Date() }

@@ -63,28 +63,8 @@ postData = async (req, res) => {
                 msg: 'La categoría ya esta registrada.'
             })
         }
-        
-        //extraer usuario logueado del token
-        const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
-
-        if(!tokenData) {
-            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
-        }
-    
-        usuario = await userModel.findById(tokenData._id)
-        if(!usuario.status || usuario.deleted || !usuario) {
-            res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
-            console.log('Usuario Bloqueado. Sin Permisos');
-        } else {
-
-            //id del usuario logueado
-            category.user_id = tokenData._id 
-            //console.log(category);
-
-            //guardar en la BD
-            await category.save()
-        }    
+        category.user_id = req.user.id;
+        await category.save()
 
         res.status(201).send({
             msg: 'Registro creado correctamente.',

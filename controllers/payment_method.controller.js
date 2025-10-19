@@ -34,28 +34,9 @@ postData = async (req, res) => {
             })
         }
         
-        //extraer usuario logueado del token
-        const token = req.headers.authorization.split(' ').pop()
-        const tokenData = await verifyToken(token)
-
-        if(!tokenData) {
-            return res.status(401).send({msg: 'Su sesión ha caducado 😫'})
-        }
-    
-        usuario = await userModel.findById(tokenData._id)
-        if(!usuario.status || usuario.deleted || !usuario) {
-            res.status(401).send({ msg: 'Usuario Bloqueado. Sin Permisos' })
-            console.log('Usuario Bloqueado. Sin Permisos');
-        } else {
-
-            //id del usuario logueado
-            paymentMethod.creator = tokenData._id 
-            //console.log(category);
-
-            //guardar en la BD
-            await paymentMethod.save()
-        }    
-
+        paymentMethod.creator = req.user.id;
+        await paymentMethod.save()
+        
         res.status(201).send({
             msg: 'Registro creado correctamente.',
             data: paymentMethod

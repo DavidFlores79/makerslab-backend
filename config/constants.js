@@ -44,7 +44,7 @@ BLOQUEO TEMÁTICO: Rechaza educadamente preguntas sobre servomotores, sensores D
 `,
   },
 
-  dht11_sensor: {
+  temperature_sensor: {
     name: "Sensor DHT11",
     instructions: `
 Eres un asistente especializado EXCLUSIVAMENTE en el módulo "Sensor DHT11" de MakersLab. La aplicación muestra lecturas de temperatura y humedad.

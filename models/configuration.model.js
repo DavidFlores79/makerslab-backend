@@ -3,23 +3,20 @@ const { Schema, model } = require('mongoose')
 const configurationSchema = new Schema({
     companyLogo: {
         type: String, // URL of the logo stored in Cloudinary
-        default: "https://www.congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png"
+        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1751821656/files/63f5014ee1ea6226ba9dbfd3_gmwwgx.png'
     },
     companyName: {
         type: String,
-        default: "Congreso Promoción Salud 2025"
+        default: " Promoción Salud 2025"
     },
     companyAddress: {
         type: String,
-        default: "Calle 90 S/N x 59 y 59A Contiguo al Hospital O'Horán"
     },
     companyEmail: {
         type: String,
-        default: "congreso_promocionsalud@correo.uady.mx"
     },
     companyPhone: {
         type: String,
-        default: "9994124345"
     },
     notificationEmails: [{ type: String }],
     userLimits: {
@@ -27,10 +24,6 @@ const configurationSchema = new Schema({
             type: Number,
             default: 2 // Default maximum payments per user
         },
-        maxSummaries: {
-            type: Number,
-            default: 1 // Default maximum summaries per user
-        }
     },
     landingPageLabels: {
         header: {
@@ -58,7 +51,8 @@ const configurationSchema = new Schema({
 });
 
 configurationSchema.methods.toJSON = function () {
-    const { __v, deleted, ...data } = this.toObject()
+    const { __v, _id, deleted, ...data } = this.toObject()
+    data.id = _id
     return data
 }
 

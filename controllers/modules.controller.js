@@ -3,29 +3,76 @@ const moduleModel = require('../models/module.model')
 
 getData = async (req, res) => {
 
-    const { limite = 0, desde= 0 } = req.query
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.page_size) || 10;
+        const skip = (page - 1) * pageSize;
 
-    const data = await moduleModel.find({ deleted: false })
-            .limit(limite)
-            .skip(desde)
+        const search = req.query.search?.trim() || '';
 
-    res.send({
-        total: data.length,
-        data
-    })
+        const query = { 
+            deleted: false,
+        };
 
+        if (search) {
+            const regex = new RegExp(search, 'i'); 
+            query.$or = [
+                { title: regex },
+                { description: regex },
+                { isStatic: regex }
+            ];
+        }
+
+        const data = await moduleModel.find(query)
+            .limit(pageSize)
+            .skip(skip);
+
+        const totalItems = await moduleModel.countDocuments(query);
+
+        res.send({
+            page: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            data: data
+        });
+        
+    } catch (error) {
+        res.status(500).send({ msg: 'Error getting records' });
+    }
+
+}
+
+getDatum = async (req, res) => {
+    const { id } = req.params
+    
+    try {
+        const query = { 
+            deleted: false,
+        };
+
+        const datum = await moduleModel.findById(id);
+
+        res.send({
+            data: datum
+        });
+        
+    } catch (error) {
+        res.status(error.status || 500).send({ msg: 'Error getting record' });
+    }
 }
 
 postData = async (req, res) => {
 
-    const { name, description, route, image } = req.body
-    
-    let NAME = name.toUpperCase()
-    let ROUTE = route.toLowerCase()
-    const data = await new moduleModel({ name: NAME, description, route: ROUTE })
+    const { title, description, route, imagePath, imageUrl } = req.body
 
-    if(image != '') {
-        data.image = image
+    const data = await new moduleModel({ title: title, description, route: route.toLowerCase() })
+
+    if(imagePath != '') {
+        data.image = imagePath
+    }
+
+    if(imageUrl != '') {
+        data.image = imageUrl
     }
     
     try {
@@ -34,50 +81,43 @@ postData = async (req, res) => {
         await data.save()
 
         res.status(201).send({
-            msg: 'Registro creado correctamente.',
+            msg: 'Record created successfully.',
             data
         });
         
-    } catch (error) {   
-        console.log(error);
-        res.status(500).send({
-            msg: 'Error al guardar el registro',
-            error
-        })
+    } catch (error) {
+        res.status(error.status || 500).send({
+            msg: error.message || 'Error saving record',
+        });
     }
 }
 
 updateData = async (req, res) => {
     const { id } = req.params
-    const { _id, name, route, ...resto } = req.body
+    const { _id, title, route, ...resto } = req.body
 
     console.log('resto *******', resto);
-
-    let NAME = name.toUpperCase()
-    let ROUTE = route.toLowerCase()
 
     try {
 
         //guardar en la BD
         const data = await moduleModel.findByIdAndUpdate(id, {
-            name: NAME,
-            route: ROUTE,
+            title,
+            route: route.toLowerCase(),
             ...resto
         }, {
             new: true
         })
 
         res.send({
-           msg: `Se ha actualizado el registro`,
-           data
+            msg: 'Record updated successfully.',
+            data
         });
         
-    } catch (error) {   
-        console.log(error);
-        res.status(500).send({
-            msg: 'Error al actualizar el registro',
-            error
-        })
+    } catch (error) {
+        res.status(error.status || 500).send({
+            msg: error.message || 'Error updating record',
+        });
     }
 
 }
@@ -94,16 +134,16 @@ deleteData = async (req, res) => {
             deleted: true
         }, { new: true })
         res.send({
-           msg: `Se ha eliminado el registro.`,
+           msg: `Record deleted successfully.`,
            data
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send({
-            msg: 'Error al eliminar el registro',
+        res.status(error.status || 500).send({
+            msg: 'Error deleting record',
             error
         })
     }
 }
 
-module.exports = { getData, postData, updateData, deleteData }
+module.exports = { getData, getDatum, postData, updateData, deleteData }

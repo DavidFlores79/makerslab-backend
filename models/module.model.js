@@ -1,25 +1,36 @@
 const {  Schema, model } = require('mongoose')
 
 const ModuleSchema = Schema({
-    name: {
+    title: {
         type: String,
-        unique: [true, 'El nombre debe ser unico'],
-        required: [true, 'El nombre es obligatorio'],
+        required: true,
     },
     description: {
         type: String,
     },
     route: {
         type: String,
-        required: [true, 'La ruta es obligatoria'],
+        required: true,
+        unique: true
+    },
+    colorHex: {
+        type: String,
+        default: '#EEEEEE'
+    },
+    assetPath: {
+        type: String,
+    },
+    imageUrl: {
+        type: String,
+        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1751821656/files/63f5014ee1ea6226ba9dbfd3_gmwwgx.png'
+    },
+    isStatic: {
+        type: Boolean,
+        default: false
     },
     priority: {
         type: Number,
         default: 0
-    },
-    image: {
-        type: String,
-        default: 'https://res.cloudinary.com/dltvxi4tm/image/upload/v1680155130/products/up8ji7twwgvk41k5vgrm.png'
     },
     status: {
         type: Boolean,
@@ -36,7 +47,8 @@ const ModuleSchema = Schema({
 })
 
 ModuleSchema.methods.toJSON = function () {
-    const { __v, deleted, ...data } = this.toObject()
+    const { __v, deleted, _id, ...data } = this.toObject()
+    data.id = _id
     return data
 }
 
