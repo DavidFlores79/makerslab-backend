@@ -12,6 +12,7 @@ const xssClean = require("xss-clean");
 const hpp = require("hpp");
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 require("dotenv").config();
 
@@ -99,8 +100,11 @@ class Server {
     this.app.use(
       fileUpload({
         useTempFiles: true,
-        tempFileDir: "/tmp/",
+        tempFileDir: os.tmpdir(), // Cross-platform temp directory
         createParentPath: true,
+        limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+        abortOnLimit: true,
+        debug: process.env.NODE_ENV !== "production", // Enable debug in dev
       })
     );
   }

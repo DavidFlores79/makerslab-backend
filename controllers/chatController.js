@@ -133,8 +133,28 @@ async function getConversationHandler(req, res, next) {
   }
 }
 
+async function resetConversation(req, res, next) {
+  try {
+    const { conversationId } = req.params;
+    const chatConversation = await Conversation.findOne({ conversationId });
+    
+    if (!chatConversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    // Clear all messages
+    chatConversation.messages = [];
+    await chatConversation.save();
+
+    res.json({ message: "Conversation reset successfully", conversationId });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   startConversation,
   sendMessage,
   getConversationHandler,
+  resetConversation,
 };
