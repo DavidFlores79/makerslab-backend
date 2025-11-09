@@ -38,7 +38,7 @@ Asegúrate de tener instalados:
 
 2. **Instalar Dependencias:**
    ```bash
-   npm install # o yarn install
+   yarn install
    ```
 
 3. **Configurar Variables de Entorno:**
@@ -47,7 +47,8 @@ Asegúrate de tener instalados:
 
 4. **Ejecutar la Aplicación:**
    ```bash
-   npm run dev # Para usar nodemon
+   yarn dev # Para usar nodemon con desarrollo
+   yarn start # Para producción
    ```
    La API estará disponible en [http://localhost:3001](http://localhost:3001) (o el puerto que hayas configurado).
 
@@ -69,6 +70,20 @@ Si deseas contribuir a este proyecto, por favor sigue los siguientes pasos:
 2.  Crea una rama con un nombre descriptivo para tu contribución (`git checkout -b mi-nueva-caracteristica`).
 3.  Realiza tus cambios y commits (asegúrate de seguir las convenciones del proyecto).
 4.  Abre un Pull Request.
+
+## Deployment
+
+### Render Deployment
+
+This application is ready to be deployed on Render. See the detailed deployment guide: [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)
+
+Quick steps:
+1. Push your code to GitHub/GitLab
+2. Create a new Blueprint on Render using the `render.yaml` file
+3. Configure your environment variables (especially `MONGODB`)
+4. Deploy!
+
+For MongoDB, we recommend using [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) free tier.
 
 ## Licencia
 

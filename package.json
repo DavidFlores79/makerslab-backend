@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app",
     "dev": "nodemon app",
-    "test-mongo": "node scripts/testMongo.js"
+    "test-mongo": "node scripts/testMongo.js",
+    "check-deploy": "node scripts/checkRenderDeployment.js"
   },
   "keywords": [],
   "author": "",
