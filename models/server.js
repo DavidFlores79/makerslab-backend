@@ -32,6 +32,8 @@ const paymentStatusRoutes = require("../routes/payment_statuses.routes");
 const fileUpload = require("express-fileupload");
 const emailRoutes = require("../routes/email.routes");
 const chatRoutes = require("../routes/chat.routes");
+const healthRoutes = require("../routes/health.routes");
+const infoRoutes = require("../routes/info.routes");
 
 // Ruta absoluta al directorio de logs
 const logDirectory = path.join(__dirname, '../logs');
@@ -114,6 +116,10 @@ class Server {
   }
 
   routes() {
+    // Health and info endpoints (no authentication required)
+    this.app.use("/health", healthRoutes);
+    this.app.use("/info", infoRoutes);
+
     this.app.use("/api/configurations", configurationRoutes);
     this.app.use("/api/users", usersRoutes);
     this.app.use("/api/roles", rolesRoutes);
