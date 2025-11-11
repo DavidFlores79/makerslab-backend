@@ -122,6 +122,11 @@ updateData = async (req, res) => {
 
     try {
 
+        // Extract role._id if role is an object
+        if (resto.role && typeof resto.role === 'object' && resto.role._id) {
+            resto.role = resto.role._id;
+        }
+
         if( password ) {
             //encriptar la contraseña
             const salt = bcrypt.genSaltSync()
@@ -133,8 +138,6 @@ updateData = async (req, res) => {
             new: true,
             session // Include the session
         }).populate('role', ['id', 'name']);
-
-        await data.save({ session });
 
         await session.commitTransaction();
         session.endSession();

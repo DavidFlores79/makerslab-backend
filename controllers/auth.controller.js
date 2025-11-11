@@ -303,13 +303,13 @@ const register = async (req, res) => {
     if (recordExist)
       throw { status: 400, message: "El registro está duplicado" };
 
-    const data = await new userModel({
+    const data = new userModel({
       name,
       email,
       phone,
       password,
       role,
-    }).populate("role", ["id", "name"]);
+    });
 
     if (image != "") {
       data.image = image;
@@ -321,6 +321,9 @@ const register = async (req, res) => {
 
     //guardar en la BD
     await data.save();
+    
+    //populate role after saving
+    await data.populate("role", ["id", "name"]);
 
     //generar el JWT
     const jwt = await generateJWT(data);
