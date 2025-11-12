@@ -8,7 +8,8 @@
     "start": "node app",
     "dev": "nodemon app",
     "test-mongo": "node scripts/testMongo.js",
-    "check-deploy": "node scripts/checkRenderDeployment.js"
+    "check-deploy": "node scripts/checkRenderDeployment.js",
+    "seed:countries": "node scripts/seedCountries.js"
   },
   "keywords": [],
   "author": "",
