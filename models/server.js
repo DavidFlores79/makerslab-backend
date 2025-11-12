@@ -65,6 +65,9 @@ class Server {
   }
 
   middlewares() {
+    // Trust proxy - Required when behind Render or other reverse proxies
+    this.app.set('trust proxy', 1);
+    
     //directorio public
     this.app.use(express.static("public"))
     this.app.use(helmet());
