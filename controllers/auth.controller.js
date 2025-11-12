@@ -334,14 +334,14 @@ const register = async (req, res) => {
     );
 
     res.status(201).send({
-      msg: "Registro creado correctamente.",
-      user: data,
+      message: "Registered successfully",
+      data: data,
       jwt,
     });
   } catch (error) {
     console.error("Error al registrar evento:", error);
     res.status(error.status || 500).send({
-      msg: error.message || "Error al guardar el registro",
+      message: error.message || "Error al guardar el registro",
     });
   }
 };
