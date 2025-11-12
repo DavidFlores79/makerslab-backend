@@ -89,7 +89,7 @@ async function sendInfoEmail(name, email, subject, message) {
     <div class="email-container">
         <!-- Encabezado -->
         <div class="header">
-            <img src="https://congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png" alt="Logo de Congreso Promoción Salud">
+            <img src="https://res.cloudinary.com/dltvxi4tm/image/upload/v1749686180/company_logos/bepncppluzzxzflmt9rw.png" alt="Logo Makerslab">
             <h1>Notificación</h1>
         </div>
 
@@ -104,13 +104,13 @@ async function sendInfoEmail(name, email, subject, message) {
                 <p>${message}</p>
             </div>
 
-            <p style="margin-top: 20px;">Si requiere alguna aclaración al respecto, favor de ponerse en <a href="https://www.congresopromocionsalud.com/#contact">contacto</a> con la Administración del Congreso.</p>
+            <p style="margin-top: 20px;">Si requiere alguna aclaración al respecto, favor de ponerse en <a href="https://makerslab-backend.onrender.com/#contact">contacto</a> con la Administración de Makerslab.</p>
         </div>
 
         <!-- Pie de página -->
         <div class="footer">
             <p>Este es un correo automático, por favor no responder directamente.</p>
-            <p>Visita nuestro sitio web: <a href="https://congresopromocionsalud.com">Congreso Promoción Salud ${new Date().getFullYear()} </a></p>
+            <p>Visita nuestro sitio web: <a href="https://makerslab-backend.onrender.com">Makerslab ${new Date().getFullYear()} </a></p>
         </div>
     </div>
 </body>

@@ -84,7 +84,7 @@ async function sendContactMeEmail(name, email, subject, message) {
     <div class="email-container">
         <!-- Encabezado -->
         <div class="header">
-            <img src="https://congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png" alt="Logo de Congreso Promoción Salud">
+            <img src="https://res.cloudinary.com/dltvxi4tm/image/upload/v1749686180/company_logos/bepncppluzzxzflmt9rw.png" alt="Logo Makerslab">
             <h1>Nuevo Mensaje de Contacto</h1>
         </div>
 
@@ -107,7 +107,7 @@ async function sendContactMeEmail(name, email, subject, message) {
         <!-- Pie de página -->
         <div class="footer">
             <p>Este es un correo automático, por favor no responder directamente.</p>
-            <p>Visita nuestro sitio web: <a href="https://congresopromocionsalud.com">Congreso Promoción Salud</a></p>
+            <p>Visita nuestro sitio web: <a href="https://makerslab-backend.onrender.com">Makerslab ${new Date().getFullYear()}</a></p>
         </div>
     </div>
 </body>

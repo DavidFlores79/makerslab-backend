@@ -83,7 +83,7 @@ async function sendNotificationEmail(subject, message) {
     <div class="email-container">
         <!-- Encabezado -->
         <div class="header">
-            <img src="https://congresopromocionsalud.com/assets/public/img/brand/logo_congreso.png"  alt="Logo de Congreso Promoción Salud">
+            <img src="https://res.cloudinary.com/dltvxi4tm/image/upload/v1749686180/company_logos/bepncppluzzxzflmt9rw.png" alt="Logo Makerslab">
             <h1>${subject}</h1>
         </div>
 
@@ -100,7 +100,7 @@ async function sendNotificationEmail(subject, message) {
         <!-- Pie de página -->
         <div class="footer">
             <p>Este es un correo automático, por favor no responder directamente.</p>
-            <p>Visita nuestro sitio web: <a href="https://congresopromocionsalud.com">Congreso  Promoción Salud ${new Date().getFullYear()}</a></p>
+            <p>Visita nuestro sitio web: <a href="https://makerslab-backend.onrender.com">Makerslab ${new Date().getFullYear()}</a></p>
         </div>
     </div>
 </body>
