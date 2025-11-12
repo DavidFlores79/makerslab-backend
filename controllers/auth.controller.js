@@ -209,18 +209,25 @@ const verifyPhoneNumber = async (req, res) => {
   }
 };
 
-//resend otp code
+//resend otp code (supports both password reset and registration)
 const resendOtp = async (req, res) => {
   try {
-    const { resetRequestId } = req.body;
+    const { resetRequestId, registrationId } = req.body;
+    const userId = resetRequestId || registrationId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Request ID is required" });
+    }
 
     // Check if user exists
-    const user = await userModel.findById(resetRequestId);
+    const user = await userModel.findById(userId);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    if (!user.status) {
+    // For password reset, check if account is blocked
+    // For registration (status: false), allow resend
+    if (resetRequestId && !user.status) {
       return res.status(401).send({
         message: "Your Account is blocked",
       });
@@ -246,8 +253,12 @@ const resendOtp = async (req, res) => {
     // Send new OTP via Twilio
     await sendOtp(user.phone, otp);
 
+    const responseId = registrationId 
+      ? { registrationId: user._id }
+      : { resetRequestId: user._id };
+
     res.json({
-      resetRequestId: user._id,
+      ...responseId,
       message: "OTP resent successfully",
     });
   } catch (error) {
@@ -299,50 +310,126 @@ const register = async (req, res) => {
       role = userRole._id;
     }
 
-    const recordExist = await userModel.findOne({ phone, status: true });
+    // Check if user already exists and is active
+    const recordExist = await userModel.findOne({ phone, status: true, deleted: false });
     if (recordExist)
       throw { status: 400, message: "El registro está duplicado" };
 
-    const data = new userModel({
-      name,
-      email,
-      phone,
-      password,
-      role,
-    });
+    // Check if there's a pending registration (user exists but not verified)
+    let data = await userModel.findOne({ phone, status: false, deleted: false });
+    
+    if (data) {
+      // Update existing pending registration
+      data.name = name;
+      data.email = email;
+      data.password = password;
+      data.role = role;
+      if (image != "") {
+        data.image = image;
+      }
+    } else {
+      // Create new user
+      data = new userModel({
+        name,
+        email,
+        phone,
+        password,
+        role,
+        status: false, // User is not active until OTP verification
+      });
 
-    if (image != "") {
-      data.image = image;
+      if (image != "") {
+        data.image = image;
+      }
     }
 
-    //encriptar la contraseña
+    // Encrypt password
     const salt = bcrypt.genSaltSync();
     data.password = bcrypt.hashSync(password, salt);
 
-    //guardar en la BD
+    // Generate OTP
+    let otpExpirationSeconds = 300; // 5 minutes
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + otpExpirationSeconds * 1000);
+
+    // Save OTP to user document
+    data.phoneVerificationCode = otp;
+    data.phoneVerificationCodeExpiresAt = otpExpiresAt;
+
+    // Save to database
     await data.save();
-    
-    //populate role after saving
-    await data.populate("role", ["id", "name"]);
 
-    //generar el JWT
-    const jwt = await generateJWT(data);
+    // Send OTP via Twilio
+    await sendOtp(data.phone, otp);
 
-    sendNotificationEmail(
-      "NUEVO USUARIO",
-      `Se ha creado al usuario ${data.name} con perfil ${data.role.name}.`
-    );
+    console.log(`Registration initiated for: ${data.phone}`);
 
     res.status(201).send({
-      message: "Registered successfully",
-      data: data,
-      jwt,
+      message: "OTP sent successfully. Please verify your phone number to complete registration.",
+      registrationId: data._id,
     });
   } catch (error) {
-    console.error("Error al registrar evento:", error);
+    console.error("Error al registrar usuario:", error);
     res.status(error.status || 500).send({
       message: error.message || "Error al guardar el registro",
     });
+  }
+};
+
+// Verify OTP and complete registration
+const verifyRegistrationOtp = async (req, res) => {
+  try {
+    const { registrationId, otp } = req.body;
+
+    // Find user by ID
+    const user = await userModel
+      .findById(registrationId)
+      .populate("role", ["id", "name"]);
+    
+    if (!user) {
+      return res.status(400).json({ message: "Registration not found" });
+    }
+
+    // Check if user is already verified
+    if (user.status) {
+      return res.status(400).json({ message: "User already verified. Please login." });
+    }
+
+    // Check if OTP is correct
+    if (user.phoneVerificationCode !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.phoneVerificationCodeExpiresAt) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // Activate user and clear OTP fields
+    user.status = true;
+    user.phoneVerificationCode = undefined;
+    user.phoneVerificationCodeExpiresAt = undefined;
+    await user.save();
+
+    // Generate JWT token
+    const jwt = await generateJWT(user);
+
+    // Send notification email to admins
+    sendNotificationEmail(
+      "NUEVO USUARIO",
+      `Se ha registrado al usuario ${user.name} con perfil ${user.role.name}.`
+    );
+
+    console.log(`User registered and verified: ${user.name} - ${user.phone}`);
+
+    res.json({
+      message: "Registration completed successfully",
+      data: user,
+      jwt,
+    });
+  } catch (error) {
+    console.error("Error verifying registration OTP:", error);
+    res.status(500).json({ message: "Failed to verify registration" });
   }
 };
 
@@ -411,6 +498,7 @@ const googleSignIn = async (req, res) => {
 module.exports = {
   login,
   register,
+  verifyRegistrationOtp,
   googleSignIn,
   loginWithPhoneNumber,
   verifyPhoneNumber,

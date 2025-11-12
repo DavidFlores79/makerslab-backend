@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator')
-const { login, googleSignIn, register, loginWithPhoneNumber, verifyPhoneNumber, forgotPassword, resendOtp, changePassword } = require('../controllers/auth.controller');
+const { login, googleSignIn, register, verifyRegistrationOtp, loginWithPhoneNumber, verifyPhoneNumber, forgotPassword, resendOtp, changePassword } = require('../controllers/auth.controller');
 const { validateLoginEmail } = require('../helpers/db_validators.helper');
 const { Validator } = require('../middlewares/validator.middleware');
 const { validateJWT } = require('../middlewares/validar-jwt.middleware');
@@ -25,6 +25,14 @@ router.post('/signup',[
     Validator
 ], register);
 
+router.post('/verify-registration', [
+    check('registrationId', 'El registrationId es obligatorio.').not().isEmpty(),
+    check('registrationId', 'No es un registrationId válido.').isMongoId(),
+    check('otp', 'El OTP es obligatorio.').not().isEmpty(),
+    check('otp', 'El OTP debe tener 6 dígitos.').isLength({ min: 6, max: 6 }),
+    Validator
+], verifyRegistrationOtp);
+
 router.post('/phone-login', [
     check('phone', 'El teléfono es obligatorio.').not().isEmpty(),
     check('phone', 'No es un teléfono válido.').isMobilePhone('any'),
@@ -45,8 +53,7 @@ router.post('/phone-verify', [
 ], verifyPhoneNumber);
 
 router.post('/resend-code', [
-    check('resetRequestId', 'El resetRequestId es obligatorio.').not().isEmpty(),
-    check('resetRequestId', 'No es un resetRequestId válido.').isMongoId(),
+    // Supports both resetRequestId (password reset) and registrationId (signup)
     Validator
 ], resendOtp);
 
