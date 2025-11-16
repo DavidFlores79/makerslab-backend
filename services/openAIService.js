@@ -17,7 +17,6 @@ async function convertUrlToBase64DataUrl(url) {
 }
 
 const getChatResponses = async function (
-  moduleInstructions,
   messages,
   model, // Auto-detect based on content
   max_tokens = 1024
@@ -82,15 +81,10 @@ const getChatResponses = async function (
       return msg;
     }));
 
-    // Add system message with instructions at the beginning
-    const apiMessages = [
-      { role: "system", content: moduleInstructions.instructions },
-      ...formattedMessages,
-    ];
-
+    // System message should already be first message in formattedMessages
     const resp = await client.chat.completions.create({
       model: selectedModel,
-      messages: apiMessages,
+      messages: formattedMessages,
       max_tokens: max_tokens,
     });
 

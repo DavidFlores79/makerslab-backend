@@ -1,6 +1,6 @@
 // routes/chat.routes.js
 const express = require('express');
-const { startConversation, sendMessage, getConversationHandler, resetConversation } = require('../controllers/chatController');
+const { startConversation, sendMessage, getConversationHandler, resetConversation, getChatUsageStats } = require('../controllers/chatController');
 const { startSchema, messageSchema } = require('../validators/chatValidators');
 const validate = require('../middlewares/validate');
 const { validateJWT } = require('../middlewares/validar-jwt.middleware');
@@ -11,6 +11,7 @@ router.post('/start', [
     validateJWT
 ], startConversation);
 router.post('/message', validate(messageSchema), sendMessage);
+router.get('/usage/stats', validateJWT, getChatUsageStats);
 router.get('/:id', getConversationHandler);
 router.get('/user/:userId', getConversationHandler);
 router.delete('/reset/:conversationId', resetConversation);

@@ -7,7 +7,7 @@ const configurationSchema = new Schema({
     },
     companyName: {
         type: String,
-        default: " Promoción Salud 2025"
+        default: "Makerslab"
     },
     companyAddress: {
         type: String,
@@ -24,6 +24,26 @@ const configurationSchema = new Schema({
             type: Number,
             default: 2 // Default maximum payments per user
         },
+    },
+    chatLimits: {
+        maxMessagesInDB: {
+            type: Number,
+            default: 30, // Maximum messages to store in database per conversation
+            min: 10,
+            max: 100
+        },
+        maxMessagesToAI: {
+            type: Number,
+            default: 20, // Maximum messages to send as context to AI (from stored messages)
+            min: 5,
+            max: 50
+        },
+        maxUserMessagesPerDay: {
+            type: Number,
+            default: 100, // Maximum messages a user can send per day
+            min: 10,
+            max: 1000
+        }
     },
     landingPageLabels: {
         header: {

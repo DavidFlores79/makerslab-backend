@@ -1,15 +1,9 @@
-const Configuration = require('../models/configuration.model');
+const configService = require('../services/configurationService');
 
 // Get all configurations
 const getConfigurations = async (req, res) => {
     try {
-        const config = await Configuration.findOne();
-        if (!config) {
-            // If no configuration exists, create a default one
-            const defaultConfig = new Configuration();
-            await defaultConfig.save();
-            return res.status(200).json(defaultConfig);
-        }
+        const config = await configService.getAllConfiguration();
         res.status(200).json(config);
     } catch (error) {
         console.error("Error fetching configurations:", error);
@@ -20,22 +14,8 @@ const getConfigurations = async (req, res) => {
 // Update configurations
 const updateConfigurations = async (req, res) => {
     try {
-        const updates = req.body; // Expect all fields to be updated
-        const config = await Configuration.findOne();
-
-        if (!config) {
-            // If no configuration exists, create a new one
-            const newConfig = new Configuration(updates);
-            await newConfig.save();
-            return res.status(200).json(newConfig);
-        }
-
-        // Update existing configuration
-        Object.keys(updates).forEach(key => {
-            config[key] = updates[key];
-        });
-
-        await config.save();
+        const updates = req.body;
+        const config = await configService.updateConfiguration(updates);
         res.status(200).json(config);
     } catch (error) {
         console.error("Error updating configurations:", error);

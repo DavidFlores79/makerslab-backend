@@ -39,6 +39,7 @@
     "moment": "^2.29.4",
     "mongoose": "^6.8.2",
     "morgan": "^1.10.1",
+    "node-cache": "^5.1.2",
     "nodemailer": "^6.9.3",
     "openai": "^5.19.1",
     "twilio": "^5.9.0",
