@@ -108,6 +108,9 @@ SECRET_JWT_SEED=tu_clave_secreta_super_segura
 
 # OpenAI (para el chat de ayuda)
 OPENAI_API_KEY=tu_api_key_de_openai
+OPENAI_MODEL_TEXT=gpt-4o-mini        # Modelo para conversaciones de texto
+OPENAI_MODEL_VISION=gpt-4o           # Modelo para reconocimiento de imágenes
+CONVO_MAX_MESSAGES=30                # Máximo de mensajes en historial
 
 # Cloudinary (para almacenamiento de archivos)
 CLOUDINARY_CLOUD_NAME=tu_cloud_name

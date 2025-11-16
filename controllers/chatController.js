@@ -83,11 +83,11 @@ async function sendMessage(req, res, next) {
       chatConversation.module || "default"
     );
 
-    // call OpenAI
+    // call OpenAI (let it auto-detect model based on content)
     const resp = await getChatResponses(
       moduleInstructions,
       messages,
-      process.env.OPENAI_MODEL || "gpt-4o-mini",
+      null, // auto-detect: gpt-4o for images, gpt-4o-mini for text
       4096
     );
 

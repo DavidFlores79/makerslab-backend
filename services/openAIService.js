@@ -29,8 +29,22 @@ const getChatResponses = async function (
       msg.content.some(item => item.type === "input_image")
     );
 
-    // Use gpt-4o for images, gpt-4o-mini for text-only (cheaper)
-    const selectedModel = model || (hasImages ? "gpt-4o" : "gpt-4o-mini");
+    // Select model based on content and environment variables
+    // OPENAI_MODEL_VISION: for image recognition (default: gpt-4o)
+    // OPENAI_MODEL_TEXT: for text-only conversations (default: gpt-4o-mini)
+    let selectedModel = model;
+    
+    if (!selectedModel) {
+      // Auto-select based on content using environment variables
+      selectedModel = hasImages 
+        ? (process.env.OPENAI_MODEL_VISION || "gpt-4o")
+        : (process.env.OPENAI_MODEL_TEXT || "gpt-4o-mini");
+    } else if (hasImages && !selectedModel.includes("vision") && !selectedModel.includes("4o")) {
+      // Override non-vision models when images are present
+      const visionModel = process.env.OPENAI_MODEL_VISION || "gpt-4o";
+      console.warn(`[OpenAI] Model '${selectedModel}' doesn't support images, switching to ${visionModel}`);
+      selectedModel = visionModel;
+    }
 
     console.log("[OpenAI getChatResponses] Model selection:", {
       hasImages,
