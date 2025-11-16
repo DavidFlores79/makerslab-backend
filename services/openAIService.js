@@ -19,10 +19,19 @@ async function convertUrlToBase64DataUrl(url) {
 const getChatResponses = async function (
   moduleInstructions,
   messages,
-  model = "gpt-4o-mini",
+  model, // Auto-detect based on content
   max_tokens = 1024
 ) {
   try {
+    // Auto-detect if images are present in messages
+    const hasImages = messages.some(msg => 
+      Array.isArray(msg.content) && 
+      msg.content.some(item => item.type === "input_image")
+    );
+
+    // Use gpt-4o for images, gpt-4o-mini for text-only (cheaper)
+    const selectedModel = model || (hasImages ? "gpt-4o" : "gpt-4o-mini");
+
     // Transform messages to OpenAI format
     const formattedMessages = await Promise.all(messages.map(async (msg) => {
       // If content is already a string, keep it
@@ -59,7 +68,7 @@ const getChatResponses = async function (
     ];
 
     const resp = await client.chat.completions.create({
-      model: model,
+      model: selectedModel,
       messages: apiMessages,
       max_tokens: max_tokens,
     });
@@ -83,7 +92,7 @@ const getChatResponses = async function (
 
 const getChatCompletion = async function (
   messages,
-  model = "gpt-4o-mini",
+  model = "gpt-4o",
   max_tokens = 1024
 ) {
   try {
