@@ -1,1 +1,9 @@
 ::1 - - [12/Nov/2025:16:39:49 +0000] "GET /api/countries HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[0mPOST /auth/phone-login [32m200[0m 319.292 ms - 617[0m
+[0mPOST /api/chat/message [32m200[0m 10714.793 ms - -[0m
+[0mPOST /auth/phone-login [32m200[0m 196.536 ms - 617[0m
+[0mPOST /api/chat/message [32m200[0m 4432.019 ms - -[0m
+[0mPOST /api/chat/message [32m200[0m 10871.605 ms - -[0m
+[0mPOST /api/chat/message [0m-[0m - ms - -[0m
+[0mPOST /auth/phone-login [32m200[0m 136.249 ms - 617[0m
+[0mPOST /api/chat/message [32m200[0m 7031.710 ms - -[0m

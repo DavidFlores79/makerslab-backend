@@ -32,6 +32,13 @@ const getChatResponses = async function (
     // Use gpt-4o for images, gpt-4o-mini for text-only (cheaper)
     const selectedModel = model || (hasImages ? "gpt-4o" : "gpt-4o-mini");
 
+    console.log("[OpenAI getChatResponses] Model selection:", {
+      hasImages,
+      selectedModel,
+      providedModel: model,
+      messagesCount: messages.length
+    });
+
     // Transform messages to OpenAI format
     const formattedMessages = await Promise.all(messages.map(async (msg) => {
       // If content is already a string, keep it
@@ -73,6 +80,12 @@ const getChatResponses = async function (
       max_tokens: max_tokens,
     });
 
+    console.log("[OpenAI getChatResponses] Response received:", {
+      model: selectedModel,
+      usage: resp.usage,
+      finishReason: resp.choices?.[0]?.finish_reason
+    });
+
     let content = resp.choices?.[0]?.message?.content ?? null;
 
     // 🔹 Normaliza cuando viene como array
@@ -96,10 +109,22 @@ const getChatCompletion = async function (
   max_tokens = 1024
 ) {
   try {
+    console.log("[OpenAI getChatCompletion] Request:", {
+      model,
+      messagesCount: messages.length,
+      max_tokens
+    });
+
     const resp = await client.chat.completions.create({
       model,
       messages,
       max_tokens,
+    });
+
+    console.log("[OpenAI getChatCompletion] Response received:", {
+      model,
+      usage: resp.usage,
+      finishReason: resp.choices?.[0]?.finish_reason
     });
 
     let content = resp.choices?.[0]?.message?.content ?? null;
