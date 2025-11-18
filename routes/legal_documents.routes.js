@@ -20,10 +20,10 @@ const router = Router();
 
 // Public routes - No authentication required
 router.get('/active', getActiveLegalDocuments);
+router.get('/', getAllLegalDocuments);
+router.get('/:id', getLegalDocumentById);
 
 // Protected routes - Authentication required
-router.get('/', [validateJWT], getAllLegalDocuments);
-router.get('/:id', [validateJWT], getLegalDocumentById);
 
 router.post('/', [
     validateJWT,
