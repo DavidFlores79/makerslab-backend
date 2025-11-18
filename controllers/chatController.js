@@ -178,16 +178,24 @@ async function getConversationHandler(req, res, next) {
         updatedAt: -1,
       });
       if (!convo) return res.status(404).json({ error: "Not found" });
+      
+      // Filter out system messages before sending to frontend
+      const userMessages = convo.messages.filter(msg => msg.role !== 'system');
+      
       return res.json({
         module: convo.module,
         conversationId: convo.conversationId,
-        messages: convo.messages,
+        messages: userMessages,
       });
     }
 
     const convo = await Conversation.findOne({ conversationId: id });
     if (!convo) return res.status(404).json({ error: "Not found" });
-    res.json({ module: convo.module, conversationId: id, messages: convo.messages });
+    
+    // Filter out system messages before sending to frontend
+    const userMessages = convo.messages.filter(msg => msg.role !== 'system');
+    
+    res.json({ module: convo.module, conversationId: id, messages: userMessages });
   } catch (err) {
     next(err);
   }

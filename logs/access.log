@@ -11,3 +11,8 @@
 [0mPUT /api/configurations [32m200[0m 590.776 ms - 503[0m
 [0mPUT /api/configurations [32m200[0m 483.000 ms - 502[0m
 [0mGET /api/configurations [32m200[0m 353.139 ms - -[0m
+[0mGET /api/configurations [32m200[0m 118.290 ms - 503[0m
+[0mGET /api/chat/b0926ecb-fca0-4e6e-8c36-cad680052974 [33m404[0m 159.662 ms - 21[0m
+[0mGET /api/chat/user/68bc3c3f5d5dd8da49688e33 [33m404[0m 52.415 ms - 21[0m
+[0mGET /api/chat/user/68f39476f6645254fb66c801 [32m200[0m 54.433 ms - -[0m
+[0mGET /api/chat/user/68f39476f6645254fb66c801 [32m200[0m 267.063 ms - -[0m
