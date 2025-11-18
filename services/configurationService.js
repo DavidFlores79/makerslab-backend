@@ -6,7 +6,7 @@
 
 const Configuration = require('../models/configuration.model');
 const NodeCache = require('node-cache');
-const appConfig = require('./app.config');
+const appConfig = require('../config/app.config');
 
 class ConfigurationService {
   constructor() {
@@ -20,8 +20,9 @@ class ConfigurationService {
   }
 
   /**
-   * Get configuration with caching
+   * Get configuration with caching (INTERNAL USE ONLY - includes sensitive data)
    * Priority: Cache -> Database -> Environment Variables
+   * @private
    */
   async getConfiguration() {
     // Try cache first
@@ -44,14 +45,16 @@ class ConfigurationService {
       await dbConfig.save();
     }
 
-    // Merge with environment config (env variables take precedence for sensitive data)
+    // Merge with environment config (env variables for internal use only)
     const mergedConfig = {
       ...dbConfig.toObject(),
-      // Override with app config for system-level settings
-      jwt: appConfig.jwt,
-      openai: appConfig.openai,
-      email: appConfig.email,
-      cloudinary: appConfig.cloudinary,
+      // System-level settings (NOT exposed via API)
+      _internal: {
+        jwt: appConfig.jwt,
+        openai: appConfig.openai,
+        email: appConfig.email,
+        cloudinary: appConfig.cloudinary,
+      }
     };
 
     // Cache the result
@@ -117,9 +120,15 @@ class ConfigurationService {
 
   /**
    * Get all configuration (for admin panel)
+   * Returns ONLY safe, non-sensitive configuration data
    */
   async getAllConfiguration() {
-    return this.getConfiguration();
+    const config = await this.getConfiguration();
+    
+    // Remove sensitive data before returning
+    const { _internal, __v, ...safeConfig } = config;
+    
+    return safeConfig;
   }
 }
 
