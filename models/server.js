@@ -35,6 +35,7 @@ const chatRoutes = require("../routes/chat.routes");
 const healthRoutes = require("../routes/health.routes");
 const infoRoutes = require("../routes/info.routes");
 const countriesRoutes = require("../routes/countries.routes");
+const legalDocumentsRoutes = require("../routes/legal_documents.routes");
 
 // Ruta absoluta al directorio de logs
 const logDirectory = path.join(__dirname, '../logs');
@@ -142,6 +143,9 @@ class Server {
     // catalogos
     this.app.use("/api/catalogs", catalogsRoutes);
     this.app.use("/api/countries", countriesRoutes);
+    
+    // legal documents (terms, privacy policy)
+    this.app.use("/api/legal", legalDocumentsRoutes);
   }
 
   listen() {
