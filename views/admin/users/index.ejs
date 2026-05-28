@@ -26,10 +26,11 @@
     <div class="container-fluid">
 
       <% if (msg) { %>
-        <div class="alert alert-info alert-dismissible fade show">
-          <i class="fas fa-info-circle mr-2"></i><%= msg %>
-          <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            showToast('<%= msg.replace(/'/g, "\\'") %>', 'success');
+          });
+        </script>
       <% } %>
 
       <div class="card">
@@ -102,9 +103,9 @@
                     </td>
                     <td class="small text-muted"><%= new Date(u.createdAt).toLocaleDateString('es-MX') %></td>
                     <td>
-                      <a href="/admin/users/<%= u.id %>" class="btn btn-sm btn-outline-primary">
+                      <button type="button" class="btn btn-sm btn-outline-primary btn-open-user" data-id="<%= u.id %>">
                         <i class="fas fa-eye"></i>
-                      </a>
+                      </button>
                     </td>
                   </tr>
                 <% }) %>
@@ -144,6 +145,363 @@
 </footer>
 
 </div>
+
+<!-- User Detail Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userModalLabel">Detalle de usuario</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" id="userModalBody">
+        <div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast snackbar container -->
+<div id="toastContainer" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;min-width:280px;max-width:400px;"></div>
+
+<style>
+  .ml-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .25s ease, transform .25s ease;
+    cursor: pointer;
+  }
+  .ml-toast.show { opacity: 1; transform: translateY(0); }
+  .ml-toast.hide { opacity: 0; transform: translateY(16px); }
+  .ml-toast-success { background: #28a745; }
+  .ml-toast-danger  { background: #dc3545; }
+  .ml-toast-warning { background: #e0a800; color: #212529; }
+  .ml-toast-info    { background: #17a2b8; }
+  .ml-toast-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  #userModalBody .select2-container { width: 100% !important; }
+  #userModalBody .select2-dropdown { z-index: 10000; }
+  .ml-toast-progress {
+    position: absolute;
+    bottom: 0; left: 0; height: 3px;
+    border-radius: 0 0 8px 8px;
+    background: rgba(255,255,255,0.45);
+    width: 100%;
+    transform-origin: left;
+    animation: toastProgress 4s linear forwards;
+  }
+  @keyframes toastProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+</style>
+
 <%- include('../partials/scripts') %>
+<script>
+  var toastIcons = { success: 'fa-check-circle', danger: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+
+  function showToast(msg, type) {
+    type = type || 'info';
+    var icon = toastIcons[type] || 'fa-info-circle';
+    var $t = $([
+      '<div class="ml-toast ml-toast-' + type + '" style="position:relative;overflow:hidden;">',
+      '  <i class="fas ' + icon + ' ml-toast-icon"></i>',
+      '  <span>' + msg + '</span>',
+      '  <div class="ml-toast-progress"></div>',
+      '</div>',
+    ].join(''));
+    $('#toastContainer').append($t);
+    requestAnimationFrame(function() { $t.addClass('show'); });
+    var timer = setTimeout(function() { dismissToast($t); }, 4000);
+    $t.on('click', function() { clearTimeout(timer); dismissToast($t); });
+  }
+
+  function dismissToast($t) {
+    $t.removeClass('show').addClass('hide');
+    setTimeout(function() { $t.remove(); }, 280);
+  }
+</script>
+<script>
+(function () {
+  var roleColors = { SUPER_ROLE: 'danger', ADMIN_ROLE: 'warning', USER_ROLE: 'secondary' };
+
+  function roleBadge(role) {
+    if (!role) return '—';
+    var color = roleColors[role.name] || 'secondary';
+    return '<span class="badge badge-' + color + '">' + role.name.replace('_ROLE', '') + '</span>';
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderModal(user, roles, privateModules, userAccess) {
+    var assignedModuleIds = (userAccess || [])
+      .filter(function(a) { return a.status === 'active'; })
+      .map(function(a) { return String(a.module.id || a.module._id || a.module); });
+
+    var rolesOptions = roles.map(function (r) {
+      var sel = user.role && String(user.role.id || user.role._id) === String(r.id || r._id) ? 'selected' : '';
+      return '<option value="' + (r.id || r._id) + '" ' + sel + '>' + r.name.replace('_ROLE', '') + '</option>';
+    }).join('');
+
+    var statusBadge = user.status
+      ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Activo</span>'
+      : '<span class="badge badge-secondary"><i class="fas fa-ban mr-1"></i>Inactivo</span>';
+    var googleBadge = user.google ? '<span class="badge badge-info ml-1"><i class="fab fa-google mr-1"></i>Google</span>' : '';
+    var toggleLabel = user.status ? 'Desactivar cuenta' : 'Activar cuenta';
+    var toggleIcon = user.status ? 'off' : 'on';
+    var toggleClass = user.status ? 'warning' : 'success';
+    var statusText = user.status
+      ? 'La cuenta está actualmente <strong>activa</strong>. Desactivarla impedirá que el usuario inicie sesión.'
+      : 'La cuenta está actualmente <strong>inactiva</strong>. Activarla permitirá que el usuario inicie sesión.';
+
+    var unassigned = (privateModules || []).filter(function(m) {
+      return assignedModuleIds.indexOf(String(m.id || m._id)) === -1;
+    });
+    var assigned = (privateModules || []).filter(function(m) {
+      return assignedModuleIds.indexOf(String(m.id || m._id)) !== -1;
+    });
+
+    var assignSelectHtml = unassigned.length === 0
+      ? ''
+      : [
+          '<div class="mb-2">',
+          '  <select id="moduleAssignSelect" class="form-control form-control-sm" style="width:100%">',
+          '    <option value="">Buscar módulo para asignar...</option>',
+          unassigned.map(function(m) {
+            return '<option value="' + (m.id || m._id) + '" data-route="' + esc(m.route) + '">' + esc(m.title) + ' — ' + esc(m.route) + '</option>';
+          }).join(''),
+          '  </select>',
+          '</div>',
+          '<div class="mb-3">',
+          '  <button type="button" id="btnAssignModule" class="btn btn-sm btn-success" disabled>',
+          '    <i class="fas fa-plus mr-1"></i>Asignar módulo',
+          '  </button>',
+          '</div>',
+        ].join('');
+
+    var assignedListHtml = assigned.length === 0
+      ? '<p class="text-muted small mb-0">Ningún módulo privado asignado.</p>'
+      : assigned.map(function(m) {
+          return [
+            '<div class="d-flex align-items-center justify-content-between py-1 border-bottom">',
+            '  <div>',
+            '    <span class="badge badge-success mr-1"><i class="fas fa-check"></i></span>',
+            '    <strong>' + esc(m.title) + '</strong>',
+            '    <span class="text-muted small ml-1">' + esc(m.route) + '</span>',
+            '  </div>',
+            '  <form class="modal-action-form mb-0" action="/admin/users/' + user.id + '/modules/' + (m.id || m._id) + '/revoke" method="POST">',
+            '    <button type="submit" class="btn btn-xs btn-outline-danger"><i class="fas fa-times"></i></button>',
+            '  </form>',
+            '</div>',
+          ].join('');
+        }).join('');
+
+    var modulesHtml = [
+      privateModules && privateModules.length === 0
+        ? '<p class="text-muted small">No hay módulos privados creados aún.</p>'
+        : assignSelectHtml,
+      assignedListHtml,
+    ].join('');
+
+    return [
+      '<div class="row">',
+      '  <div class="col-md-4 text-center">',
+      '    <img src="' + esc(user.image) + '" class="img-circle elevation-2 mb-3" style="width:90px;height:90px;object-fit:cover;">',
+      '    <h5 class="mb-1">' + esc(user.name || '—') + '</h5>',
+      '    <p>' + roleBadge(user.role) + ' ' + statusBadge + googleBadge + '</p>',
+      '    <ul class="list-group list-group-flush text-left small">',
+      '      <li class="list-group-item"><i class="fas fa-phone text-muted mr-2"></i>' + esc(user.phone || '—') + '</li>',
+      '      <li class="list-group-item"><i class="fas fa-envelope text-muted mr-2"></i>' + esc(user.email || '—') + '</li>',
+      '      <li class="list-group-item text-muted"><i class="fas fa-calendar-plus mr-2"></i>' + new Date(user.createdAt).toLocaleString('es-MX') + '</li>',
+      '    </ul>',
+      '  </div>',
+
+      '  <div class="col-md-8">',
+
+      '    <div class="card card-primary card-outline mb-3">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-edit mr-2"></i>Editar datos</h3></div>',
+      '      <div class="card-body">',
+      '        <form class="modal-action-form" action="/admin/users/' + user.id + '/update" method="POST">',
+      '          <div class="row">',
+      '            <div class="col-sm-4"><div class="form-group mb-2"><input type="text" name="name" class="form-control form-control-sm" placeholder="Nombre" value="' + esc(user.name || '') + '"></div></div>',
+      '            <div class="col-sm-4"><div class="form-group mb-2"><input type="email" name="email" class="form-control form-control-sm" placeholder="Email" value="' + esc(user.email || '') + '"></div></div>',
+      '            <div class="col-sm-4"><div class="form-group mb-2"><input type="text" name="phone" class="form-control form-control-sm" placeholder="Teléfono" value="' + esc(user.phone || '') + '"></div></div>',
+      '          </div>',
+      '          <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save mr-1"></i>Guardar datos</button>',
+      '        </form>',
+      '      </div>',
+      '    </div>',
+
+      '    <div class="card card-secondary card-outline mb-3">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-user-tag mr-2"></i>Cambiar rol</h3></div>',
+      '      <div class="card-body">',
+      '        <form class="modal-action-form d-flex" action="/admin/users/' + user.id + '/change-role" method="POST">',
+      '          <select name="roleId" class="form-control form-control-sm mr-2" style="max-width:200px;">' + rolesOptions + '</select>',
+      '          <button type="submit" class="btn btn-sm btn-secondary"><i class="fas fa-user-tag mr-1"></i>Cambiar rol</button>',
+      '        </form>',
+      '      </div>',
+      '    </div>',
+
+      '    <div class="card card-info card-outline mb-3">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-puzzle-piece mr-2"></i>Módulos privados</h3></div>',
+      '      <div class="card-body">',
+      modulesHtml,
+      '      </div>',
+      '    </div>',
+
+      '    <div class="card card-' + (user.status ? 'success' : 'secondary') + ' card-outline mb-3">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-toggle-' + (user.status ? 'on' : 'off') + ' mr-2"></i>Estado de la cuenta</h3></div>',
+      '      <div class="card-body">',
+      '        <p class="text-muted mb-3">' + statusText + '</p>',
+      '        <form class="modal-action-form" action="/admin/users/' + user.id + '/toggle-status" method="POST">',
+      '          <button type="submit" class="btn btn-sm btn-' + toggleClass + '"><i class="fas fa-toggle-' + toggleIcon + ' mr-1"></i>' + toggleLabel + '</button>',
+      '        </form>',
+      '      </div>',
+      '    </div>',
+
+      '    <div class="card card-warning card-outline mb-3">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-key mr-2"></i>Cambiar contraseña</h3></div>',
+      '      <div class="card-body">',
+      '        <form class="modal-action-form" action="/admin/users/' + user.id + '/reset-password" method="POST" data-confirm="¿Confirmar cambio de contraseña para ' + esc(user.name || user.phone) + '?">',
+      '          <div class="input-group">',
+      '            <input type="text" name="newPassword" class="form-control" placeholder="Nueva contraseña (mín. 6 caracteres)" minlength="6" required>',
+      '            <div class="input-group-append">',
+      '              <button type="submit" class="btn btn-warning"><i class="fas fa-key mr-1"></i>Cambiar</button>',
+      '            </div>',
+      '          </div>',
+      '        </form>',
+      '      </div>',
+      '    </div>',
+
+      '    <div class="card card-danger card-outline mb-0">',
+      '      <div class="card-header"><h3 class="card-title"><i class="fas fa-trash-alt mr-2"></i>Eliminar usuario</h3></div>',
+      '      <div class="card-body">',
+      '        <p class="text-muted mb-3">Esta acción desactiva y oculta al usuario del sistema. No se puede deshacer fácilmente.</p>',
+      '        <form class="modal-action-form" action="/admin/users/' + user.id + '/delete" method="POST" data-confirm="¿Eliminar a ' + esc(user.name || user.phone) + '? Esta acción no se puede deshacer fácilmente.">',
+      '          <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt mr-1"></i>Eliminar usuario</button>',
+      '        </form>',
+      '      </div>',
+      '    </div>',
+
+      '  </div>',
+      '</div>',
+    ].join('');
+  }
+
+  function showAlert(msg, type) { showToast(msg, type); }
+
+  function refreshModal(userId) {
+    fetch('/admin/users/' + userId, { headers: { 'Accept': 'application/json' } })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.error) return;
+        var u = data.user;
+        $('#userModalLabel').text(u.name || u.phone || 'Detalle de usuario');
+        $('#userModalBody').html(renderModal(u, data.roles, data.privateModules, data.userAccess));
+        bindModalForms(userId);
+
+        var $row = $('[data-id="' + userId + '"]').closest('tr');
+        var rc = { SUPER_ROLE: 'danger', ADMIN_ROLE: 'warning', USER_ROLE: 'secondary' };
+        var rName = u.role ? u.role.name : null;
+        $row.find('td:nth-child(2)').text(u.name || '—');
+        $row.find('td:nth-child(5)').html(rName
+          ? '<span class="badge badge-' + (rc[rName] || 'secondary') + '">' + rName.replace('_ROLE', '') + '</span>'
+          : '<span class="text-muted">—</span>');
+        $row.find('td:nth-child(6)').html(u.status
+          ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Activo</span>'
+          : '<span class="badge badge-secondary"><i class="fas fa-ban mr-1"></i>Inactivo</span>');
+      });
+  }
+
+  function openModal(id) {
+    $('#userModalBody').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+    $('#userModal').modal('show');
+
+    fetch('/admin/users/' + id, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) {
+          $('#userModalBody').html('<div class="alert alert-danger">' + data.error + '</div>');
+          return;
+        }
+        $('#userModalLabel').text(data.user.name || data.user.phone || 'Detalle de usuario');
+        $('#userModalBody').html(renderModal(data.user, data.roles, data.privateModules, data.userAccess));
+        bindModalForms(id);
+      })
+      .catch(function () {
+        $('#userModalBody').html('<div class="alert alert-danger">Error al cargar el usuario.</div>');
+      });
+  }
+
+  $(document).on('click', '.btn-open-user', function () {
+    openModal($(this).data('id'));
+  });
+
+  function bindModalForms(userId) {
+    // Init Select2 on the module assign dropdown
+    var $select = $('#moduleAssignSelect');
+    if ($select.length) {
+      $select.select2({
+        theme: 'bootstrap4',
+        placeholder: 'Buscar módulo para asignar...',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#userModalBody'),
+      }).on('change', function() {
+        $('#btnAssignModule').prop('disabled', !$(this).val());
+      });
+    }
+
+    $('#btnAssignModule').on('click', function() {
+      var moduleId = $('#moduleAssignSelect').val();
+      if (!moduleId) return;
+
+      fetch('/admin/users/' + userId + '/modules/' + moduleId + '/assign', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      }).then(function(r) { return r.json(); })
+      .then(function(result) {
+        showAlert(result.msg, result.ok ? 'success' : 'danger');
+        if (result.ok) refreshModal(userId);
+      }).catch(function() {
+        showAlert('Error de comunicación con el servidor.', 'danger');
+      });
+    });
+
+    $('#userModalBody').find('.modal-action-form').on('submit', function (e) {
+      e.preventDefault();
+      var form = this;
+      var msg = $(form).data('confirm');
+      if (msg && !confirm(msg)) return;
+
+      var url = form.action;
+      var body = new URLSearchParams(new FormData(form)).toString();
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: body,
+      }).then(function (r) { return r.json(); })
+      .then(function (result) {
+        showAlert(result.msg, result.ok ? 'success' : 'danger');
+        if (result.ok) refreshModal(userId);
+      }).catch(function (err) {
+        console.error('Modal action error:', err);
+        showAlert('Error de comunicación con el servidor.', 'danger');
+      });
+    });
+  }
+})();
+</script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-const bcrypt = require('bcryptjs')
 const moduleModel = require('../models/module.model')
+const UserModuleAccess = require('../models/user_module_access.model')
 
 getData = async (req, res) => {
 
@@ -10,24 +10,37 @@ getData = async (req, res) => {
 
         const search = req.query.search?.trim() || '';
 
-        const query = { 
+        // Fetch private module IDs this user has active access to
+        const userAccess = await UserModuleAccess.find({
+            user: req.user._id,
+            status: 'active',
             deleted: false,
+            $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+        }).select('module')
+        const assignedModuleIds = userAccess.map(a => a.module)
+
+        const query = {
+            status: true,
+            deleted: false,
+            $or: [
+                { isPublic: true },
+                { _id: { $in: assignedModuleIds } },
+            ],
         };
 
         if (search) {
-            const regex = new RegExp(search, 'i'); 
-            query.$or = [
-                { title: regex },
-                { description: regex },
-                { isStatic: regex }
+            const regex = new RegExp(search, 'i');
+            query.$and = [
+                { $or: query.$or },
+                { $or: [{ title: regex }, { description: regex }] },
             ];
+            delete query.$or;
         }
 
-        const data = await moduleModel.find(query)
-            .limit(pageSize)
-            .skip(skip);
-
-        const totalItems = await moduleModel.countDocuments(query);
+        const [data, totalItems] = await Promise.all([
+            moduleModel.find(query).skip(skip).limit(pageSize).sort({ priority: -1 }),
+            moduleModel.countDocuments(query),
+        ]);
 
         res.send({
             page: page,
@@ -35,7 +48,7 @@ getData = async (req, res) => {
             totalItems: totalItems,
             data: data
         });
-        
+
     } catch (error) {
         res.status(500).send({ msg: 'Error getting records' });
     }

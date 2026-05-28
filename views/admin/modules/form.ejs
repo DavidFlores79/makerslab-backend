@@ -1,0 +1,207 @@
+<%- include('../partials/head', { title: module ? 'Editar módulo' : 'Nuevo módulo' }) %>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+<%- include('../partials/navbar') %>
+<%- include('../partials/sidebar', { activePage: 'modules' }) %>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0"><%= module ? 'Editar módulo' : 'Nuevo módulo' %></h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/admin">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/admin/modules">Módulos</a></li>
+            <li class="breadcrumb-item active"><%= module ? module.title : 'Nuevo' %></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container-fluid">
+
+      <% if (msg) { %>
+        <div class="alert alert-info alert-dismissible fade show">
+          <i class="fas fa-info-circle mr-2"></i><%= msg %>
+          <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+      <% } %>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-puzzle-piece mr-2"></i><%= module ? 'Editar módulo' : 'Crear módulo' %></h3>
+            </div>
+            <form action="/admin/modules/<%= module ? module.id + '/edit' : 'new' %>" method="POST">
+              <div class="card-body">
+
+                <div class="form-group">
+                  <label>Título <span class="text-danger">*</span></label>
+                  <input type="text" name="title" class="form-control" placeholder="Ej. Control de LED" value="<%= module ? module.title : '' %>" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Descripción</label>
+                  <textarea name="description" class="form-control" rows="3" placeholder="Descripción breve del módulo"><%= module ? module.description : '' %></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>Ruta <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text"><i class="fas fa-route"></i></span>
+                    </div>
+                    <input type="text" name="route" class="form-control" placeholder="Ej. led_control" value="<%= module ? module.route : '' %>" required>
+                  </div>
+                  <small class="text-muted">Identificador único en minúsculas. Se usa para conectar el módulo con la app Flutter.</small>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Color</label>
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text p-1">
+                            <input type="color" id="colorPicker" value="<%= module ? module.colorHex : '#EEEEEE' %>" style="width:28px;height:28px;border:none;cursor:pointer;padding:0;">
+                          </span>
+                        </div>
+                        <input type="text" name="colorHex" id="colorHex" class="form-control" value="<%= module ? module.colorHex : '#EEEEEE' %>" placeholder="#EEEEEE">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Prioridad</label>
+                      <input type="number" name="priority" class="form-control" value="<%= module ? module.priority : 0 %>" min="0">
+                      <small class="text-muted">Mayor número = aparece primero en la app.</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>URL de imagen</label>
+                  <input type="url" name="imageUrl" class="form-control" placeholder="https://..." value="<%= module && module.imageUrl ? module.imageUrl : '' %>">
+                </div>
+
+                <div class="form-group">
+                  <label>Asset path (Flutter)</label>
+                  <input type="text" name="assetPath" class="form-control" placeholder="Ej. assets/modules/led.png" value="<%= module && module.assetPath ? module.assetPath : '' %>">
+                  <small class="text-muted">Ruta del asset local en la app Flutter.</small>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Visibilidad <span class="text-danger">*</span></label>
+                      <select name="isPublic" class="form-control">
+                        <option value="true" <%= !module || module.isPublic ? 'selected' : '' %>>Público — visible para todos</option>
+                        <option value="false" <%= module && !module.isPublic ? 'selected' : '' %>>Privado — solo usuarios asignados</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Opciones</label>
+                      <div class="custom-control custom-switch mt-1">
+                        <input type="checkbox" class="custom-control-input" id="isStatic" name="isStatic" <%= module && module.isStatic ? 'checked' : '' %>>
+                        <label class="custom-control-label" for="isStatic">Módulo estático</label>
+                      </div>
+                      <small class="text-muted">Los módulos estáticos no requieren conexión Bluetooth.</small>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="card-footer d-flex justify-content-between">
+                <a href="/admin/modules" class="btn btn-default">
+                  <i class="fas fa-arrow-left mr-1"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save mr-1"></i><%= module ? 'Guardar cambios' : 'Crear módulo' %>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <!-- Preview card -->
+          <div class="card card-outline card-secondary">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-eye mr-2"></i>Vista previa</h3>
+            </div>
+            <div class="card-body text-center">
+              <div id="previewColor" style="width:80px;height:80px;border-radius:16px;margin:0 auto 12px;background:<%= module ? module.colorHex : '#EEEEEE' %>;"></div>
+              <h5 id="previewTitle" class="mb-1"><%= module ? module.title : 'Título del módulo' %></h5>
+              <p id="previewDesc" class="text-muted small"><%= module && module.description ? module.description : 'Descripción del módulo' %></p>
+              <code id="previewRoute"><%= module ? module.route : 'ruta' %></code>
+            </div>
+          </div>
+
+          <% if (module) { %>
+          <div class="card card-danger card-outline">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-trash-alt mr-2"></i>Eliminar módulo</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Esta acción oculta el módulo del sistema y lo desaparece de la app.</p>
+              <form action="/admin/modules/<%= module.id %>/delete" method="POST"
+                    onsubmit="return confirm('¿Eliminar el módulo <%= module.title %>? Esta acción no se puede deshacer fácilmente.')">
+                <button type="submit" class="btn btn-sm btn-danger btn-block">
+                  <i class="fas fa-trash-alt mr-1"></i>Eliminar módulo
+                </button>
+              </form>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="main-footer">
+  <strong>MakersLab Admin</strong> &copy; <%= new Date().getFullYear() %>
+</footer>
+
+</div>
+<%- include('../partials/scripts') %>
+<script>
+  // Sync color picker <-> hex input
+  var picker = document.getElementById('colorPicker');
+  var hexInput = document.getElementById('colorHex');
+  var previewColor = document.getElementById('previewColor');
+
+  picker.addEventListener('input', function() {
+    hexInput.value = picker.value;
+    previewColor.style.background = picker.value;
+  });
+  hexInput.addEventListener('input', function() {
+    if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+      picker.value = hexInput.value;
+      previewColor.style.background = hexInput.value;
+    }
+  });
+
+  // Live preview
+  document.querySelector('[name="title"]').addEventListener('input', function() {
+    document.getElementById('previewTitle').textContent = this.value || 'Título del módulo';
+  });
+  document.querySelector('[name="description"]').addEventListener('input', function() {
+    document.getElementById('previewDesc').textContent = this.value || 'Descripción del módulo';
+  });
+  document.querySelector('[name="route"]').addEventListener('input', function() {
+    document.getElementById('previewRoute').textContent = this.value || 'ruta';
+  });
+</script>
+</body>
+</html>

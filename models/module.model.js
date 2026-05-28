@@ -32,6 +32,10 @@ const ModuleSchema = Schema({
         type: Number,
         default: 0
     },
+    isPublic: {
+        type: Boolean,
+        default: true,
+    },
     status: {
         type: Boolean,
         default: true
