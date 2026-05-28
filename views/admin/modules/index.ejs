@@ -1,0 +1,215 @@
+<%- include('../partials/head', { title: 'Módulos' }) %>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+<%- include('../partials/navbar') %>
+<%- include('../partials/sidebar', { activePage: 'modules' }) %>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Módulos</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/admin">Inicio</a></li>
+            <li class="breadcrumb-item active">Módulos</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container-fluid">
+
+      <% if (msg) { %>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            showToast('<%= msg.replace(/'/g, "\\'") %>', 'success');
+          });
+        </script>
+      <% } %>
+
+      <div class="card">
+        <div class="card-header">
+          <form method="GET" action="/admin/modules" class="d-flex align-items-center">
+            <div class="input-group input-group-sm" style="max-width: 360px;">
+              <input type="text" name="search" class="form-control" placeholder="Buscar por título o ruta..." value="<%= search %>">
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+            <% if (search) { %>
+              <a href="/admin/modules" class="btn btn-sm btn-outline-secondary ml-2">
+                <i class="fas fa-times"></i> Limpiar
+              </a>
+            <% } %>
+          </form>
+          <div class="card-tools">
+            <span class="badge badge-secondary mr-2"><%= totalItems %> módulos</span>
+            <a href="/admin/modules/new" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus mr-1"></i>Nuevo módulo
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="thead-light">
+                <tr>
+                  <th style="width:50px"></th>
+                  <th>Título</th>
+                  <th>Ruta</th>
+                  <th>Visibilidad</th>
+                  <th>Estado</th>
+                  <th>Prioridad</th>
+                  <th style="width:120px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (modules.length === 0) { %>
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                      <i class="fas fa-puzzle-piece fa-2x mb-2 d-block"></i>
+                      No se encontraron módulos
+                    </td>
+                  </tr>
+                <% } %>
+                <% modules.forEach(function(m) { %>
+                  <tr>
+                    <td class="text-center">
+                      <div style="width:36px;height:36px;border-radius:6px;background:<%= m.colorHex || '#EEEEEE' %>;margin:auto;"></div>
+                    </td>
+                    <td>
+                      <strong><%= m.title %></strong>
+                      <% if (m.description) { %>
+                        <br><small class="text-muted"><%= m.description.substring(0, 60) %><%= m.description.length > 60 ? '…' : '' %></small>
+                      <% } %>
+                    </td>
+                    <td><code><%= m.route %></code></td>
+                    <td>
+                      <% if (m.isPublic) { %>
+                        <span class="badge badge-success"><i class="fas fa-globe mr-1"></i>Público</span>
+                      <% } else { %>
+                        <span class="badge badge-warning"><i class="fas fa-lock mr-1"></i>Privado</span>
+                      <% } %>
+                      <% if (m.isStatic) { %>
+                        <span class="badge badge-secondary ml-1">Estático</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (m.status) { %>
+                        <span class="badge badge-success"><i class="fas fa-check mr-1"></i>Activo</span>
+                      <% } else { %>
+                        <span class="badge badge-secondary"><i class="fas fa-ban mr-1"></i>Inactivo</span>
+                      <% } %>
+                    </td>
+                    <td class="text-center"><%= m.priority %></td>
+                    <td>
+                      <a href="/admin/modules/<%= m.id %>/edit" class="btn btn-sm btn-outline-primary mr-1" title="Editar">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <form action="/admin/modules/<%= m.id %>/toggle-status" method="POST" class="d-inline" title="<%= m.status ? 'Desactivar' : 'Activar' %>">
+                        <button type="submit" class="btn btn-sm btn-outline-<%= m.status ? 'warning' : 'success' %>">
+                          <i class="fas fa-toggle-<%= m.status ? 'off' : 'on' %>"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <% if (totalPages > 1) { %>
+        <div class="card-footer clearfix">
+          <div class="float-left small text-muted">
+            Página <%= page %> de <%= totalPages %> &mdash; <%= totalItems %> registros
+          </div>
+          <ul class="pagination pagination-sm m-0 float-right">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link" href="?page=<%= page - 1 %>&search=<%= search %>">&laquo;</a>
+            </li>
+            <% for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) { %>
+              <li class="page-item <%= p === page ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= p %>&search=<%= search %>"><%= p %></a>
+              </li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link" href="?page=<%= page + 1 %>&search=<%= search %>">&raquo;</a>
+            </li>
+          </ul>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="main-footer">
+  <strong>MakersLab Admin</strong> &copy; <%= new Date().getFullYear() %>
+</footer>
+
+</div>
+<!-- Toast snackbar container -->
+<div id="toastContainer" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;min-width:280px;max-width:400px;"></div>
+
+<style>
+  .ml-toast {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 14px 18px; border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    color: #fff; font-size: 14px; line-height: 1.4;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity .25s ease, transform .25s ease;
+    cursor: pointer; position: relative; overflow: hidden;
+  }
+  .ml-toast.show { opacity: 1; transform: translateY(0); }
+  .ml-toast.hide { opacity: 0; transform: translateY(16px); }
+  .ml-toast-success { background: #28a745; }
+  .ml-toast-danger  { background: #dc3545; }
+  .ml-toast-warning { background: #e0a800; color: #212529; }
+  .ml-toast-info    { background: #17a2b8; }
+  .ml-toast-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .ml-toast-progress {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    border-radius: 0 0 8px 8px; background: rgba(255,255,255,0.45);
+    width: 100%; transform-origin: left;
+    animation: toastProgress 4s linear forwards;
+  }
+  @keyframes toastProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+</style>
+
+<%- include('../partials/scripts') %>
+<script>
+  var toastIcons = { success: 'fa-check-circle', danger: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+
+  function showToast(msg, type) {
+    type = type || 'info';
+    var icon = toastIcons[type] || 'fa-info-circle';
+    var $t = $([
+      '<div class="ml-toast ml-toast-' + type + '">',
+      '  <i class="fas ' + icon + ' ml-toast-icon"></i>',
+      '  <span>' + msg + '</span>',
+      '  <div class="ml-toast-progress"></div>',
+      '</div>',
+    ].join(''));
+    $('#toastContainer').append($t);
+    requestAnimationFrame(function() { $t.addClass('show'); });
+    var timer = setTimeout(function() { dismissToast($t); }, 4000);
+    $t.on('click', function() { clearTimeout(timer); dismissToast($t); });
+  }
+
+  function dismissToast($t) {
+    $t.removeClass('show').addClass('hide');
+    setTimeout(function() { $t.remove(); }, 280);
+  }
+</script>
+</body>
+</html>

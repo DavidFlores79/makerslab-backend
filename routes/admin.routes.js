@@ -24,6 +24,17 @@ router.post('/users/:id/toggle-status', ctrl.postToggleUserStatus);
 router.post('/users/:id/delete', ctrl.postDeleteUser);
 router.post('/users/:id/change-role', ctrl.postChangeUserRole);
 router.post('/users/:id/reset-password', ctrl.postResetPassword);
+router.post('/users/:id/update', ctrl.postUpdateUser);
+router.post('/users/:id/modules/:moduleId/assign', ctrl.postAssignModule);
+router.post('/users/:id/modules/:moduleId/revoke', ctrl.postRevokeModule);
 
+// Modules
+router.get('/modules', ctrl.getModulesList);
+router.get('/modules/new', ctrl.getModuleForm);
+router.post('/modules/new', ctrl.postCreateModule);
+router.get('/modules/:id/edit', ctrl.getModuleForm);
+router.post('/modules/:id/edit', ctrl.postUpdateModule);
+router.post('/modules/:id/toggle-status', ctrl.postToggleModuleStatus);
+router.post('/modules/:id/delete', ctrl.postDeleteModule);
 
 module.exports = router;

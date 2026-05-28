@@ -125,17 +125,21 @@
           <!-- Reset Password -->
           <div class="card card-warning card-outline">
             <div class="card-header">
-              <h3 class="card-title"><i class="fas fa-key mr-2"></i>Restablecer contraseña</h3>
+              <h3 class="card-title"><i class="fas fa-key mr-2"></i>Cambiar contraseña</h3>
             </div>
             <div class="card-body">
               <p class="text-muted mb-3">
-                Se generará una contraseña temporal de 6 dígitos y se enviará por SMS al número <strong><%= user.phone || '(sin teléfono)' %></strong>.
+                Establece una nueva contraseña para <strong><%= user.name || user.phone %></strong>. Deberás comunicársela al usuario por tu cuenta.
               </p>
-              <form action="/admin/users/<%= user.id %>/reset-password" method="POST" onsubmit="return confirm('¿Confirmar restablecimiento de contraseña para <%= user.name || user.phone %>?')">
-
-                <button type="submit" class="btn btn-sm btn-warning" <%= !user.phone ? 'disabled title="El usuario no tiene teléfono registrado"' : '' %>>
-                  <i class="fas fa-paper-plane mr-1"></i>Enviar contraseña temporal
-                </button>
+              <form action="/admin/users/<%= user.id %>/reset-password" method="POST" onsubmit="return confirm('¿Confirmar cambio de contraseña para <%= user.name || user.phone %>?')">
+                <div class="input-group mb-3">
+                  <input type="text" name="newPassword" class="form-control" placeholder="Nueva contraseña (mín. 6 caracteres)" minlength="6" required>
+                  <div class="input-group-append">
+                    <button type="submit" class="btn btn-warning">
+                      <i class="fas fa-key mr-1"></i>Cambiar contraseña
+                    </button>
+                  </div>
+                </div>
               </form>
             </div>
           </div>
