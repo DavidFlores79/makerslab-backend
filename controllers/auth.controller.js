@@ -12,7 +12,7 @@ const { sendOtp } = require("../services/twilioService");
 const generateOtp = (phone) => {
   const mockPhone = process.env.MOCK_OTP_PHONE;
   const mockCode = process.env.MOCK_OTP_CODE;
-  if (mockPhone && mockCode && phone === mockPhone && process.env.NODE_ENV !== 'production') {
+  if (mockPhone && mockCode && phone === mockPhone) {
     console.log(`[DEV] Mock OTP for ${phone}: ${mockCode}`);
     return mockCode;
   }
