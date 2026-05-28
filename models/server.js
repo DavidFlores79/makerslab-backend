@@ -13,6 +13,8 @@ const hpp = require("hpp");
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const session = require('express-session');
+const { MongoStore } = require('connect-mongo');
 
 require("dotenv").config();
 
@@ -36,6 +38,7 @@ const healthRoutes = require("../routes/health.routes");
 const infoRoutes = require("../routes/info.routes");
 const countriesRoutes = require("../routes/countries.routes");
 const legalDocumentsRoutes = require("../routes/legal_documents.routes");
+const adminRoutes = require("../routes/admin.routes");
 
 // Ruta absoluta al directorio de logs
 const logDirectory = path.join(__dirname, '../logs');
@@ -69,10 +72,50 @@ class Server {
   middlewares() {
     // Trust proxy - Required when behind Render or other reverse proxies
     this.app.set('trust proxy', 1);
-    
+
+    // View engine for admin panel
+    this.app.set('view engine', 'ejs');
+    this.app.set('views', path.join(__dirname, '../views'));
+
     //directorio public
     this.app.use(express.static("public"))
-    this.app.use(helmet());
+
+    // API routes: strict Helmet defaults
+    this.app.use(/^\/(api|auth|health|info)/, helmet());
+    // Admin panel: relaxed CSP for AdminLTE CDN assets
+    this.app.use('/admin', helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "'unsafe-inline'"],
+          styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "'unsafe-inline'"],
+          fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
+          imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
+        },
+      },
+    }));
+
+    // Session store for admin panel
+    this.app.use(session({
+      name: process.env.ADMIN_SESSION_NAME || 'makerslab_admin_sid',
+      secret: process.env.SESSION_SECRET || 'changeme_use_env_in_production',
+      resave: false,
+      saveUninitialized: false,
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGODB,
+        collectionName: 'admin_sessions',
+        ttl: 8 * 60 * 60,
+        autoRemove: 'native',
+      }),
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production' && process.env.HTTPS === 'true',
+        sameSite: 'lax',
+        maxAge: 8 * 60 * 60 * 1000,
+      },
+    }));
     this.app.use(compression());
     // this.app.use(
     //   morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
@@ -146,6 +189,9 @@ class Server {
     
     // legal documents (terms, privacy policy)
     this.app.use("/api/legal", legalDocumentsRoutes);
+
+    // Admin panel
+    this.app.use("/admin", adminRoutes);
   }
 
   listen() {

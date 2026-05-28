@@ -1,0 +1,179 @@
+<%- include('../partials/head', { title: user.name || 'Detalle de usuario' }) %>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+<%- include('../partials/navbar') %>
+<%- include('../partials/sidebar', { activePage: 'users' }) %>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Detalle de usuario</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/admin">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/admin/users">Usuarios</a></li>
+            <li class="breadcrumb-item active"><%= user.name || user.phone %></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container-fluid">
+
+      <% if (msg) { %>
+        <div class="alert alert-info alert-dismissible fade show">
+          <i class="fas fa-info-circle mr-2"></i><%= msg %>
+          <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+      <% } %>
+
+      <div class="row">
+        <!-- User profile card -->
+        <div class="col-md-4">
+          <div class="card card-primary card-outline">
+            <div class="card-body text-center pt-4">
+              <img src="<%= user.image %>" alt="<%= user.name %>" class="profile-user-img img-fluid img-circle elevation-2" style="width:100px;height:100px;object-fit:cover;">
+              <h3 class="profile-username mt-3"><%= user.name || '—' %></h3>
+              <p class="text-muted">
+                <% if (user.role) { %>
+                  <span class="badge badge-<%= user.role.name === 'SUPER_ROLE' ? 'danger' : user.role.name === 'ADMIN_ROLE' ? 'warning' : 'secondary' %> mr-1">
+                    <%= user.role.name.replace('_ROLE', '') %>
+                  </span>
+                <% } %>
+                <% if (user.status) { %>
+                  <span class="badge badge-success">Activo</span>
+                <% } else { %>
+                  <span class="badge badge-secondary">Inactivo</span>
+                <% } %>
+                <% if (user.google) { %>
+                  <span class="badge badge-info ml-1"><i class="fab fa-google mr-1"></i>Google</span>
+                <% } %>
+              </p>
+            </div>
+            <div class="card-footer p-0">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <i class="fas fa-phone text-muted mr-2"></i><%= user.phone || '—' %>
+                </li>
+                <li class="list-group-item">
+                  <i class="fas fa-envelope text-muted mr-2"></i><%= user.email || '—' %>
+                </li>
+                <li class="list-group-item small text-muted">
+                  <i class="fas fa-calendar-plus mr-2"></i>Registro: <%= new Date(user.createdAt).toLocaleString('es-MX') %>
+                </li>
+                <li class="list-group-item small text-muted">
+                  <i class="fas fa-clock mr-2"></i>Actualizado: <%= new Date(user.updatedAt).toLocaleString('es-MX') %>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions column -->
+        <div class="col-md-8">
+
+          <!-- Change Role -->
+          <div class="card card-secondary card-outline">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-user-tag mr-2"></i>Cambiar rol</h3>
+            </div>
+            <div class="card-body">
+              <form action="/admin/users/<%= user.id %>/change-role" method="POST" class="d-flex align-items-center gap-2">
+
+                <select name="roleId" class="form-control form-control-sm mr-2" style="max-width:200px;">
+                  <% roles.forEach(function(r) { %>
+                    <option value="<%= r.id %>" <%= user.role && user.role.id === r.id ? 'selected' : '' %>>
+                      <%= r.name.replace('_ROLE', '') %>
+                    </option>
+                  <% }) %>
+                </select>
+                <button type="submit" class="btn btn-sm btn-secondary">
+                  <i class="fas fa-save mr-1"></i>Guardar
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Toggle Status -->
+          <div class="card <%= user.status ? 'card-success' : 'card-secondary' %> card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-toggle-<%= user.status ? 'on' : 'off' %> mr-2"></i>Estado de la cuenta
+              </h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted mb-3">
+                La cuenta está actualmente <strong><%= user.status ? 'activa' : 'inactiva' %></strong>.
+                <%= user.status ? 'Desactivarla impedirá que el usuario inicie sesión.' : 'Activarla permitirá que el usuario inicie sesión.' %>
+              </p>
+              <form action="/admin/users/<%= user.id %>/toggle-status" method="POST">
+
+                <button type="submit" class="btn btn-sm btn-<%= user.status ? 'warning' : 'success' %>">
+                  <i class="fas fa-toggle-<%= user.status ? 'off' : 'on' %> mr-1"></i>
+                  <%= user.status ? 'Desactivar cuenta' : 'Activar cuenta' %>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Reset Password -->
+          <div class="card card-warning card-outline">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-key mr-2"></i>Restablecer contraseña</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted mb-3">
+                Se generará una contraseña temporal de 6 dígitos y se enviará por SMS al número <strong><%= user.phone || '(sin teléfono)' %></strong>.
+              </p>
+              <form action="/admin/users/<%= user.id %>/reset-password" method="POST" onsubmit="return confirm('¿Confirmar restablecimiento de contraseña para <%= user.name || user.phone %>?')">
+
+                <button type="submit" class="btn btn-sm btn-warning" <%= !user.phone ? 'disabled title="El usuario no tiene teléfono registrado"' : '' %>>
+                  <i class="fas fa-paper-plane mr-1"></i>Enviar contraseña temporal
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Delete User -->
+          <div class="card card-danger card-outline">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-trash-alt mr-2"></i>Eliminar usuario</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted mb-3">
+                Esta acción desactiva y oculta al usuario del sistema. No se puede deshacer fácilmente.
+              </p>
+              <form action="/admin/users/<%= user.id %>/delete" method="POST" onsubmit="return confirm('¿Eliminar a <%= user.name || user.phone %>? Esta acción no se puede deshacer fácilmente.')">
+
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <i class="fas fa-trash-alt mr-1"></i>Eliminar usuario
+                </button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <a href="/admin/users" class="btn btn-default btn-sm mb-4">
+        <i class="fas fa-arrow-left mr-1"></i>Volver a la lista
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<footer class="main-footer">
+  <strong>MakersLab Admin</strong> &copy; <%= new Date().getFullYear() %>
+</footer>
+
+</div>
+<%- include('../partials/scripts') %>
+</body>
+</html>

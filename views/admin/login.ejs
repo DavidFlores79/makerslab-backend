@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MakersLab Admin — Iniciar sesión</title>
+  <link rel="icon" type="image/png" href="/img/logo-app.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+  <style>
+    body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+    .login-card { border-radius: 12px; overflow: hidden; }
+    .login-logo img { width: 80px; height: 80px; object-fit: contain; }
+    .login-logo-animated { width: 120px; }
+  </style>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo mb-2 text-center">
+    <img src="/img/logo_animated.gif" alt="MakersLab" class="login-logo-animated">
+    <div class="mt-2">
+      <span class="h4 font-weight-bold text-white">MakersLab</span><br>
+      <small class="text-muted">Panel de Administración</small>
+    </div>
+  </div>
+
+  <div class="card login-card elevation-4">
+    <div class="card-body">
+      <% if (error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="fas fa-exclamation-triangle mr-2"></i><%= error %>
+          <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+          </button>
+        </div>
+      <% } %>
+
+      <form action="/admin/login" method="POST">
+
+
+        <div class="input-group mb-3">
+          <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required autofocus>
+          <div class="input-group-append">
+            <div class="input-group-text"><i class="fas fa-envelope"></i></div>
+          </div>
+        </div>
+
+        <div class="input-group mb-3">
+          <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
+          <div class="input-group-append">
+            <div class="input-group-text"><i class="fas fa-lock"></i></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-sign-in-alt mr-2"></i>Iniciar sesión
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+</body>
+</html>
