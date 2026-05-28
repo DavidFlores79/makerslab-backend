@@ -9,6 +9,16 @@ const {
 } = require("../helpers/email-notifications.helper");
 const { sendOtp } = require("../services/twilioService");
 
+const generateOtp = (phone) => {
+  const mockPhone = process.env.MOCK_OTP_PHONE;
+  const mockCode = process.env.MOCK_OTP_CODE;
+  if (mockPhone && mockCode && phone === mockPhone && process.env.NODE_ENV !== 'production') {
+    console.log(`[DEV] Mock OTP for ${phone}: ${mockCode}`);
+    return mockCode;
+  }
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 // Login user
 const login = async (req, res) => {
   try {
@@ -146,7 +156,7 @@ const forgotPassword = async (req, res) => {
     // }
 
     // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp(user.phone);
     const otpExpiresAt = new Date(Date.now() + otpExpirationSeconds * 1000);
 
     // Save OTP to user document
@@ -242,7 +252,7 @@ const resendOtp = async (req, res) => {
     // }
 
     // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp(user.phone);
     const otpExpiresAt = new Date(Date.now() + otpExpirationSeconds * 1000);
 
     // Save new OTP to user document
