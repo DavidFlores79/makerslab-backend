@@ -323,7 +323,7 @@ const register = async (req, res) => {
     // Check if user already exists and is active
     const recordExist = await userModel.findOne({ phone, status: true, deleted: false });
     if (recordExist)
-      throw { status: 400, message: "El registro está duplicado" };
+      throw { status: 400, message: "Este teléfono ya está registrado" };
 
     // Check if there's a pending registration (user exists but not verified)
     let data = await userModel.findOne({ phone, status: false, deleted: false });
@@ -359,7 +359,7 @@ const register = async (req, res) => {
 
     // Generate OTP
     let otpExpirationSeconds = 300; // 5 minutes
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp(data.phone);
     const otpExpiresAt = new Date(Date.now() + otpExpirationSeconds * 1000);
 
     // Save OTP to user document

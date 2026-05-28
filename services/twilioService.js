@@ -1,6 +1,11 @@
 const twilio = require('twilio');
 
 const sendOtp = async (phoneNumber, otp) => {
+  if (process.env.MOCK_OTP_PHONE && phoneNumber === process.env.MOCK_OTP_PHONE) {
+    console.log(`[MOCK] Skipping Twilio for ${phoneNumber}, OTP: ${otp}`);
+    return;
+  }
+
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
