@@ -1,0 +1,27 @@
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <a href="/admin" class="brand-link">
+    <img src="/img/logo-app.png" alt="MakersLab" class="brand-image brand-image-small elevation-3 ml-2">
+    <span class="brand-text font-weight-light sidebar-brand-text">MakersLab</span>
+  </a>
+  <div class="sidebar">
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="image">
+        <i class="fas fa-user-shield fa-2x text-white ml-1 mt-1"></i>
+      </div>
+      <div class="info">
+        <span class="d-block text-white"><%= adminUser.name %></span>
+        <small class="text-muted"><%= adminUser.role %></small>
+      </div>
+    </div>
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+        <li class="nav-item">
+          <a href="/admin/users" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'users' ? 'active' : '' %>">
+            <i class="nav-icon fas fa-users"></i>
+            <p>Usuarios</p>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>
