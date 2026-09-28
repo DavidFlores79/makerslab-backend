@@ -1,4 +1,5 @@
 const nodeMailer = require('nodemailer');
+const { SMTP_TIMEOUTS } = require('../config/constants');
 
 async function sendNotificationEmail(subject, message) {
     const recipients = process.env.MAIL_RECIPIENTS.split(',');
@@ -115,9 +116,7 @@ async function sendNotificationEmail(subject, message) {
             user: process.env.SMTP2GO_USERNAME,
             pass: process.env.SMTP2GO_PASSWORD
         },
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100
+        ...SMTP_TIMEOUTS
     });
 
     try {

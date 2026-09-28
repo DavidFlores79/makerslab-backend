@@ -1,5 +1,3 @@
-const { sendInfoEmail } = require("../helpers/information-email.helper");
-
 // src/config/constants.js
 const USER_ROLE = "USER_ROLE";
 const ADMIN_ROLE = "ADMIN_ROLE";
@@ -200,7 +198,15 @@ function getModuleInstructions(moduleName) {
   return MODULE_INSTRUCTIONS[moduleName] || MODULE_INSTRUCTIONS.default;
 }
 
+// Timeouts for nodemailer transports so a stuck SMTP server can't hold a request open
+const SMTP_TIMEOUTS = {
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 30000,
+};
+
 module.exports = {
+  SMTP_TIMEOUTS,
   USER_ROLE,
   ADMIN_ROLE,
   SUPER_ROLE,

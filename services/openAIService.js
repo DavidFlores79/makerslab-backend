@@ -2,14 +2,22 @@
 const { max } = require("moment");
 const { OpenAI } = require("openai");
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// SDK default is 10 min timeout with 2 retries; keep requests bounded
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  timeout: Number(process.env.OPENAI_TIMEOUT_MS || 60000),
+  maxRetries: 1,
+});
 
 /**
  * Converts an HTTP(S) URL to a base64 data URL
  * Required for OpenAI Vision API compatibility
  */
 async function convertUrlToBase64DataUrl(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image (${response.status}): ${url}`);
+  }
   const buffer = await response.arrayBuffer();
   const base64 = Buffer.from(buffer).toString('base64');
   const mimeType = response.headers.get('content-type') || 'image/jpeg';

@@ -15,7 +15,7 @@ const sendOtp = async (phoneNumber, otp) => {
     throw new Error('Twilio configuration error. Please check environment variables.');
   }
 
-  const client = twilio(accountSid, authToken);
+  const client = twilio(accountSid, authToken, { timeout: 15000 });
 
   try {
     await client.messages.create({

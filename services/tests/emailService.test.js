@@ -116,6 +116,9 @@ describe('EmailService - sendOrderConfirmationEmail', () => {
         user: 'user@test.com',
         pass: 'password',
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000,
     });
 
     expect(fs.readFile).toHaveBeenCalledWith(
