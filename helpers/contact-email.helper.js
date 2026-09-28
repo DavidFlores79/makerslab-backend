@@ -1,4 +1,5 @@
 const nodeMailer = require('nodemailer');
+const { SMTP_TIMEOUTS } = require('../config/constants');
 
 async function sendContactMeEmail(name, email, subject, message) {
 
@@ -122,7 +123,8 @@ async function sendContactMeEmail(name, email, subject, message) {
         auth: {
             user: process.env.MAIL_USERNAME,
             pass: process.env.MAIL_PASSWORD
-        }
+        },
+        ...SMTP_TIMEOUTS
     });
 
     const info = await transporter.sendMail({

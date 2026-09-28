@@ -7,7 +7,11 @@ const dbConnection = async () => {
         const DB_URI = process.env.MONGODB
         mongoose.set('strictQuery', false)
         
-        await mongoose.connect(DB_URI)
+        await mongoose.connect(DB_URI, {
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+        })
 
         console.log('**** MONGO DB: CONEXION CORRECTA ****')
 

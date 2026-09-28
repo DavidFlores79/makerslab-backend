@@ -8,7 +8,6 @@ const {
   getChatCompletion,
   getChatResponses,
 } = require("../services/openAIService");
-const { getChatResponse } = require("../services/openAIChatService");
 const { getModuleInstructions } = require("../config/constants");
 
 // helper: recorta el array de messages manteniendo los últimos maxMessages

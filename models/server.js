@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const { dbConnection } = require("../database/config");
 const bodyParser = require("body-parser");
 const rateLimiter = require("../middlewares/rateLimitterMiddleware");
+const { requestMonitor } = require("../middlewares/request-monitor.middleware");
 const slowDown = require("express-slow-down");
 const mongoSanitize = require("express-mongo-sanitize");
 const xssClean = require("xss-clean");
@@ -73,6 +74,8 @@ class Server {
     // Trust proxy - Required when behind Render or other reverse proxies
     this.app.set('trust proxy', 1);
 
+    this.app.use(requestMonitor);
+
     // View engine for admin panel
     this.app.set('view engine', 'ejs');
     this.app.set('views', path.join(__dirname, '../views'));
@@ -121,7 +124,7 @@ class Server {
     //   morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
     // );
     this.app.use(
-      morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", { stream: accessLogStream })
+      morgan(process.env.NODE_ENV === "production" ? ':remote-addr - [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":user-agent" :response-time ms' : "dev", { stream: accessLogStream })
     );
     this.app.use(cors());
     this.app.use(express.json());
@@ -159,8 +162,14 @@ class Server {
     );
   }
 
+  // Retry in-process instead of crashing: on shared hosting a crash loop spawns extra processes
   async conectarDB() {
-    await dbConnection();
+    try {
+      await dbConnection();
+    } catch (error) {
+      console.error('DB connection failed, retrying in 15s');
+      setTimeout(() => this.conectarDB(), 15000);
+    }
   }
 
   routes() {
@@ -195,9 +204,16 @@ class Server {
   }
 
   listen() {
-    this.app.listen(this.port, () => {
-      console.log(`API lista en el puerto ${this.port}`);
+    const server = this.app.listen(this.port, () => {
+      console.log(`API lista en el puerto ${this.port} (pid ${process.pid}, node ${process.version})`);
     });
+
+    // Close sockets whose request never finishes so they don't pile up on the host
+    const requestTimeoutMs = Number(process.env.REQUEST_TIMEOUT_MS || 120000);
+    server.setTimeout(requestTimeoutMs);
+    server.requestTimeout = requestTimeoutMs;
+    server.headersTimeout = 30000;
+    server.keepAliveTimeout = 5000;
   }
 }
 

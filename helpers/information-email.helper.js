@@ -1,4 +1,5 @@
 const nodeMailer = require('nodemailer');
+const { SMTP_TIMEOUTS } = require('../config/constants');
 
 async function sendInfoEmail(name, email, subject, message) {
 
@@ -126,9 +127,7 @@ async function sendInfoEmail(name, email, subject, message) {
             user: process.env.SMTP2GO_USERNAME,
             pass: process.env.SMTP2GO_PASSWORD
         },
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100
+        ...SMTP_TIMEOUTS
     });
 
     try {

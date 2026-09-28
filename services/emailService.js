@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const fs = require('fs/promises');
 const handlebars = require('handlebars');
 const path = require('path');
+const { SMTP_TIMEOUTS } = require('../config/constants');
 
 async function sendOrderConfirmationEmail(orderData, customerToEmail, settingsObject, templateFilenameWithoutExtension) {
   // settingsObject is still used for storeName, storeLogo etc.
@@ -20,6 +21,7 @@ async function sendOrderConfirmationEmail(orderData, customerToEmail, settingsOb
         user: process.env.MAIL_USERNAME,
         pass: process.env.MAIL_PASSWORD,
       },
+      ...SMTP_TIMEOUTS,
     });
 
     const templatePath = path.join(__dirname, `../templates/email/${templateFilenameWithoutExtension}.html`);
@@ -148,6 +150,7 @@ function createTransporter() {
         user: process.env.MAIL_USERNAME,
         pass: process.env.MAIL_PASSWORD,
       },
+      ...SMTP_TIMEOUTS,
     });
 }
 
