@@ -5,3 +5,4 @@ uploads/users/*
 uploads/modules/*
 uploads/permissions/*
 .env
+logs/
